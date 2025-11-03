@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Dostępności Cyfrowej - Generator Raportów</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="main-title">Monitoring strony - <span id="current-date"></span></h1>
+        </header>
+
+        <form id="report-form">
+            <section class="form-section">
+                <div class="form-group">
+                    <label for="monitoring-date">Data monitoringu:</label>
+                    <input type="date" id="monitoring-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="wykonawca">Wykonawca:</label>
+                    <input type="text" id="wykonawca" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="klient">Klient:</label>
+                    <select id="klient" required>
+                        <option value="">-- Wybierz klienta --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="zakres">Zakres raportu:</label>
+                    <textarea id="zakres" rows="3" readonly></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Okres monitoringu:</label>
+                    <div class="date-range">
+                        <input type="date" id="okres-od" placeholder="Od" required>
+                        <span>do</span>
+                        <input type="date" id="okres-do" placeholder="Do" required>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section">
+                <div class="section-header">
+                    <h2>Lista zweryfikowanych treści</h2>
+                    <button type="button" id="add-content-btn" class="btn btn-primary">+ Dodaj element</button>
+                </div>
+
+                <div id="content-list" class="content-list">
+                    <!-- Dynamic content items will be added here -->
+                </div>
+            </section>
+
+            <section class="actions-section">
+                <div class="action-buttons">
+                    <button type="button" id="save-json-btn" class="btn btn-success">💾 Zapisz do JSON</button>
+                    <label for="load-json-input" class="btn btn-info">📂 Wczytaj JSON</label>
+                    <input type="file" id="load-json-input" accept=".json" style="display: none;">
+                    <button type="button" id="export-pdf-btn" class="btn btn-danger">📄 Eksportuj do PDF</button>
+                </div>
+                <div class="autosave-info">
+                    <span id="autosave-status">Automatyczny zapis: <span id="autosave-time">--:--</span></span>
+                </div>
+            </section>
+        </form>
+    </div>
+
+    <!-- Hidden template for content items -->
+    <template id="content-item-template">
+        <div class="content-item">
+            <div class="content-item-header">
+                <h3>Element <span class="item-number"></span></h3>
+                <button type="button" class="btn-remove" title="Usuń element">✕</button>
+            </div>
+            <div class="content-item-body">
+                <div class="form-group">
+                    <label>Typ treści:</label>
+                    <select class="content-type" required>
+                        <option value="">-- Wybierz typ --</option>
+                        <option value="post">Post</option>
+                        <option value="strona">Strona</option>
+                        <option value="dokument">Dokument</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Adres URL:</label>
+                    <input type="url" class="content-url" placeholder="https://example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Zidentyfikowane problemy:</label>
+                    <textarea class="content-problems" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Wprowadzone poprawki:</label>
+                    <textarea class="content-fixes" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Zrzut ekranu:</label>
+                    <div class="screenshot-upload">
+                        <input type="file" class="screenshot-input" accept="image/*">
+                        <div class="screenshot-preview" style="display: none;">
+                            <img src="" alt="Podgląd zrzutu ekranu">
+                            <button type="button" class="btn-remove-screenshot">Usuń zdjęcie</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
