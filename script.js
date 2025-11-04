@@ -3,27 +3,106 @@ let klienciData = [];
 let wykonawcaName = '';
 let contentItemCounter = 0;
 let autosaveInterval;
+let filesLoaded = { wykonawca: false, klienci: false };
 
 // Initialize application
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadDataFiles();
-    setCurrentDate();
-    setupEventListeners();
-    loadFromLocalStorage();
-    startAutosave();
+document.addEventListener('DOMContentLoaded', () => {
+    checkConfigurationData();
+    setupConfigListeners();
 });
 
-// Load data from text files
-async function loadDataFiles() {
-    try {
-        // Load wykonawca
-        const wykonawcaResponse = await fetch('wykonawca.txt');
-        wykonawcaName = await wykonawcaResponse.text();
-        document.getElementById('wykonawca').value = wykonawcaName.trim();
+// Check if configuration data exists
+function checkConfigurationData() {
+    const savedWykonawca = localStorage.getItem('wykonawca_data');
+    const savedKlienci = localStorage.getItem('klienci_data');
 
-        // Load klienci
-        const klienciResponse = await fetch('klienci.txt');
-        const klienciText = await klienciResponse.text();
+    if (savedWykonawca && savedKlienci) {
+        // Data exists, load and start app
+        loadDataFromStorage();
+        hideConfigModal();
+        initializeApp();
+    } else {
+        // Show configuration modal
+        showConfigModal();
+    }
+}
+
+// Show/hide configuration modal
+function showConfigModal() {
+    document.getElementById('config-modal').style.display = 'flex';
+    document.getElementById('main-container').style.display = 'none';
+    document.getElementById('cancel-config-btn').style.display =
+        localStorage.getItem('wykonawca_data') ? 'block' : 'none';
+}
+
+function hideConfigModal() {
+    document.getElementById('config-modal').style.display = 'none';
+    document.getElementById('main-container').style.display = 'block';
+}
+
+// Setup configuration listeners
+function setupConfigListeners() {
+    // File input listeners
+    document.getElementById('wykonawca-file').addEventListener('change', handleWykonawcaFile);
+    document.getElementById('klienci-file').addEventListener('change', handleKlienciFile);
+
+    // Save configuration
+    document.getElementById('save-config-btn').addEventListener('click', saveConfiguration);
+
+    // Cancel configuration (only if data already exists)
+    document.getElementById('cancel-config-btn').addEventListener('click', () => {
+        filesLoaded = { wykonawca: false, klienci: false };
+        hideConfigModal();
+    });
+
+    // Update data button
+    document.getElementById('update-data-btn').addEventListener('click', () => {
+        filesLoaded = { wykonawca: false, klienci: false };
+        document.getElementById('wykonawca-file').value = '';
+        document.getElementById('klienci-file').value = '';
+        document.getElementById('wykonawca-status').textContent = '';
+        document.getElementById('klienci-status').textContent = '';
+        document.getElementById('save-config-btn').disabled = true;
+        showConfigModal();
+    });
+}
+
+// Handle wykonawca file upload
+function handleWykonawcaFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        wykonawcaName = e.target.result.trim();
+        filesLoaded.wykonawca = true;
+
+        const statusDiv = document.getElementById('wykonawca-status');
+        statusDiv.textContent = `✓ Wczytano: ${wykonawcaName}`;
+        statusDiv.className = 'file-status success';
+
+        checkFilesLoaded();
+    };
+
+    reader.onerror = () => {
+        const statusDiv = document.getElementById('wykonawca-status');
+        statusDiv.textContent = '✗ Błąd wczytywania pliku';
+        statusDiv.className = 'file-status error';
+        filesLoaded.wykonawca = false;
+        checkFilesLoaded();
+    };
+
+    reader.readAsText(file);
+}
+
+// Handle klienci file upload
+function handleKlienciFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const klienciText = e.target.result;
         const lines = klienciText.split('\n').filter(line => line.trim());
 
         klienciData = lines.map(line => {
@@ -31,19 +110,89 @@ async function loadDataFiles() {
             return { klient, umowa };
         });
 
-        // Populate klient dropdown
-        const klientSelect = document.getElementById('klient');
-        klienciData.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.klient;
-            option.textContent = item.klient;
-            option.dataset.umowa = item.umowa;
-            klientSelect.appendChild(option);
-        });
-    } catch (error) {
-        console.error('Error loading data files:', error);
-        alert('Błąd wczytywania plików danych. Upewnij się, że pliki wykonawca.txt i klienci.txt istnieją.');
+        filesLoaded.klienci = true;
+
+        const statusDiv = document.getElementById('klienci-status');
+        statusDiv.textContent = `✓ Wczytano ${klienciData.length} klientów`;
+        statusDiv.className = 'file-status success';
+
+        checkFilesLoaded();
+    };
+
+    reader.onerror = () => {
+        const statusDiv = document.getElementById('klienci-status');
+        statusDiv.textContent = '✗ Błąd wczytywania pliku';
+        statusDiv.className = 'file-status error';
+        filesLoaded.klienci = false;
+        checkFilesLoaded();
+    };
+
+    reader.readAsText(file);
+}
+
+// Check if both files are loaded
+function checkFilesLoaded() {
+    const saveBtn = document.getElementById('save-config-btn');
+    saveBtn.disabled = !(filesLoaded.wykonawca && filesLoaded.klienci);
+}
+
+// Save configuration to localStorage
+function saveConfiguration() {
+    localStorage.setItem('wykonawca_data', wykonawcaName);
+    localStorage.setItem('klienci_data', JSON.stringify(klienciData));
+
+    hideConfigModal();
+    loadDataFromStorage();
+    initializeApp();
+}
+
+// Load data from localStorage
+function loadDataFromStorage() {
+    wykonawcaName = localStorage.getItem('wykonawca_data') || '';
+    const savedKlienci = localStorage.getItem('klienci_data');
+
+    if (savedKlienci) {
+        try {
+            klienciData = JSON.parse(savedKlienci);
+        } catch (error) {
+            console.error('Error parsing klienci data:', error);
+            klienciData = [];
+        }
     }
+}
+
+// Initialize main application
+function initializeApp() {
+    setCurrentDate();
+    populateWykonawca();
+    populateKlienci();
+    setupEventListeners();
+    loadFromLocalStorage();
+    startAutosave();
+}
+
+// Populate wykonawca field
+function populateWykonawca() {
+    document.getElementById('wykonawca').value = wykonawcaName;
+}
+
+// Populate klienci dropdown
+function populateKlienci() {
+    const klientSelect = document.getElementById('klient');
+
+    // Clear existing options except the first one
+    while (klientSelect.options.length > 1) {
+        klientSelect.remove(1);
+    }
+
+    // Add klienci options
+    klienciData.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.klient;
+        option.textContent = item.klient;
+        option.dataset.umowa = item.umowa;
+        klientSelect.appendChild(option);
+    });
 }
 
 // Set current date in title
