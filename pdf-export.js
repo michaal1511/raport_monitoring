@@ -95,92 +95,92 @@ function createPDFContent() {
     return html;
 }
 
-// Export to PDF
+// Export to PDF - using print preview
 async function exportToPDF() {
-    if (!window.html2pdf) {
-        alert('Biblioteka html2pdf nie została załadowana!');
-        return;
-    }
-
-    // Show loading message
-    const originalText = document.getElementById('export-pdf-btn').textContent;
-    document.getElementById('export-pdf-btn').textContent = '⏳ Generowanie PDF...';
-    document.getElementById('export-pdf-btn').disabled = true;
-
     try {
         const htmlContent = createPDFContent();
 
-        // Create temporary element that is visible for rendering
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlContent;
-        tempDiv.style.position = 'fixed';
-        tempDiv.style.top = '0';
-        tempDiv.style.left = '0';
-        tempDiv.style.width = '210mm';
-        tempDiv.style.backgroundColor = 'white';
-        tempDiv.style.zIndex = '10000';
-        tempDiv.style.overflow = 'auto';
-        tempDiv.style.maxHeight = '100vh';
-        tempDiv.style.padding = '20px';
+        // Create print styles
+        const printStyles = `
+            <style>
+                @page {
+                    size: A4;
+                    margin: 10mm;
+                }
 
-        document.body.appendChild(tempDiv);
+                body {
+                    margin: 0;
+                    padding: 0;
+                    font-family: Arial, sans-serif;
+                }
 
-        // Wait for all images to load
-        const images = tempDiv.querySelectorAll('img');
-        const imagePromises = Array.from(images).map(img => {
-            if (img.complete) {
-                return Promise.resolve();
-            }
-            return new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = resolve; // Resolve anyway to not block PDF generation
-                // Timeout after 5 seconds
-                setTimeout(resolve, 5000);
-            });
-        });
+                @media print {
+                    body {
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
 
-        await Promise.all(imagePromises);
+                    .no-print {
+                        display: none !important;
+                    }
 
-        // Additional wait for fonts and rendering
-        await new Promise(resolve => setTimeout(resolve, 1000));
+                    * {
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                }
+            </style>
+        `;
 
-        // Get current timestamp for filename
-        const now = new Date();
-        const pdfTimestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
-        const filename = `raport_${pdfTimestamp}.pdf`;
+        // Open new window for print preview
+        const printWindow = window.open('', '_blank', 'width=800,height=600');
 
-        // Configure PDF options
-        const opt = {
-            margin: 10,
-            filename: filename,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: {
-                scale: 2,
-                useCORS: true,
-                allowTaint: true,
-                letterRendering: true,
-                logging: true,
-                windowWidth: 794  // A4 width in pixels at 96 DPI
-            },
-            jsPDF: {
-                unit: 'mm',
-                format: 'a4',
-                orientation: 'portrait'
-            }
+        if (!printWindow) {
+            alert('Zablokowano wyskakujące okno! Pozwól na wyskakujące okna dla tej strony.');
+            return;
+        }
+
+        // Write content to new window
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="pl">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Raport - Podgląd wydruku</title>
+                ${printStyles}
+            </head>
+            <body>
+                ${htmlContent}
+
+                <div class="no-print" style="position: fixed; top: 10px; right: 10px; background: white; padding: 10px; border: 2px solid #667eea; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10001;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold; color: #667eea;">Podgląd raportu</p>
+                    <button onclick="window.print()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; margin-bottom: 5px; width: 100%;">
+                        🖨️ Zapisz jako PDF
+                    </button>
+                    <button onclick="window.close()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; width: 100%;">
+                        ✕ Zamknij
+                    </button>
+                    <p style="margin: 10px 0 0 0; font-size: 11px; color: #666;">
+                        Wybierz "Zapisz jako PDF" w oknie drukowania
+                    </p>
+                </div>
+            </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+
+        // Wait for images to load before focusing
+        printWindow.onload = () => {
+            // Wait a bit for rendering
+            setTimeout(() => {
+                printWindow.focus();
+            }, 500);
         };
 
-        // Generate PDF from the visible element
-        await html2pdf().set(opt).from(tempDiv).save();
-
-        // Remove temporary element
-        document.body.removeChild(tempDiv);
-
     } catch (error) {
-        console.error('Error generating PDF:', error);
-        alert('Wystąpił błąd podczas generowania PDF!');
-    } finally {
-        // Restore button
-        document.getElementById('export-pdf-btn').textContent = originalText;
-        document.getElementById('export-pdf-btn').disabled = false;
+        console.error('Error generating preview:', error);
+        alert('Wystąpił błąd podczas generowania podglądu!');
     }
 }

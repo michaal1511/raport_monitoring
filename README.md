@@ -34,10 +34,14 @@ Każdy element zawiera:
 - Zrzut ekranu (opcjonalnie)
 
 #### Eksport do PDF
-- Format A4
-- Timestamp w prawym dolnym rogu każdej strony
-- Watermark z nazwą wykonawcy (pionowy tekst po lewej stronie)
+- Podgląd wydruku w nowym oknie
+- Natywne okno drukowania przeglądarki (Ctrl+P)
+- Możliwość zapisania jako PDF
+- Format A4 z odpowiednimi marginesami
+- Nazwa wykonawcy i timestamp w nagłówku
 - Wszystkie zrzuty ekranu wbudowane w dokument
+- Pełne wsparcie dla polskich znaków
+- Automatyczne zawijanie długiego tekstu
 
 ## Instalacja i uruchomienie
 
@@ -117,7 +121,11 @@ Politechnika Warszawska | PW/2024/08
 3. **Zapisz raport**:
    - **Automatyczny zapis**: dane zapisują się co minutę w przeglądarce
    - **Ręczny zapis do JSON**: kliknij "💾 Zapisz do JSON"
-   - **Eksport do PDF**: kliknij "📄 Eksportuj do PDF"
+   - **Podgląd i drukowanie**: kliknij "🖨️ Podgląd i drukuj"
+     - Otworzy się nowe okno z podglądem raportu
+     - Kliknij "Zapisz jako PDF" lub użyj Ctrl+P
+     - W oknie drukowania wybierz "Zapisz jako PDF"
+     - Zapisz plik w wybranej lokalizacji
 
 ### Wczytywanie zapisanego raportu
 - Kliknij **"📂 Wczytaj JSON"**
@@ -129,11 +137,16 @@ Politechnika Warszawska | PW/2024/08
 ### Problem: Modal konfiguracyjny pokazuje się za każdym razem
 **Rozwiązanie**: Sprawdź, czy przeglądarka ma włączoną obsługę localStorage. Niektóre tryby prywatne/incognito mogą blokować localStorage.
 
-### Problem: PDF się nie generuje
+### Problem: Okno podglądu się nie otwiera
 **Rozwiązanie**:
-- Sprawdź konsolę przeglądarki (F12) aby zobaczyć szczegóły błędu
-- Upewnij się, że masz połączenie z internetem przy pierwszym uruchomieniu (biblioteki jsPDF i html2canvas pobierane są z CDN)
-- Jeśli pracujesz całkowicie offline, pobierz biblioteki lokalnie
+- Przeglądarka blokuje wyskakujące okna
+- Pozwól na wyskakujące okna dla tej strony (ikona w pasku adresu)
+- Spróbuj ponownie kliknąć "Podgląd i drukuj"
+
+### Problem: Nie mogę zapisać jako PDF
+**Rozwiązanie**:
+- W oknie drukowania (Ctrl+P) wybierz jako drukarkę "Zapisz jako PDF" lub "Microsoft Print to PDF"
+- Jeśli nie widzisz takiej opcji, zainstaluj wirtualną drukarkę PDF (np. Microsoft Print to PDF w Windows 10/11)
 
 ### Problem: Autosave nie działa
 **Rozwiązanie**: Sprawdź, czy przeglądarka ma włączoną obsługę localStorage. Sprawdź także limity miejsca w localStorage (zwykle 5-10MB).
@@ -157,15 +170,16 @@ Politechnika Warszawska | PW/2024/08
 - **JavaScript (ES6+)** - logika aplikacji
 - **FileReader API** - wczytywanie plików lokalnie (bez serwera)
 - **localStorage API** - trwałe przechowywanie danych konfiguracyjnych
-- **jsPDF** - generowanie plików PDF
-- **html2canvas** - renderowanie treści do obrazów (opcjonalnie)
+- **Window.print() API** - natywne okno drukowania do PDF
+- **@media print** - stylowanie dla wydruku/PDF
 
 ### Zalety architektury
-- ✅ **Całkowicie offline** - działa bez internetu (oprócz bibliotek z CDN przy pierwszym użyciu)
+- ✅ **Całkowicie offline** - działa bez internetu, bez zewnętrznych bibliotek
 - ✅ **Bez instalacji** - nie wymaga Node.js, Python ani żadnych narzędzi
 - ✅ **Przenośna** - skopiuj folder i uruchom gdziekolwiek
 - ✅ **Bezpieczna** - dane przechowywane lokalnie w przeglądarce
 - ✅ **Szybka** - natychmiastowe uruchomienie, brak kompilacji
+- ✅ **Niezawodna** - używa natywnego mechanizmu drukowania przeglądarki
 
 ## Licencja
 
