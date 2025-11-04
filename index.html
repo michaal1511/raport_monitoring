@@ -141,16 +141,27 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Zrzut ekranu:</label>
-                    <div class="screenshot-upload">
-                        <input type="file" class="screenshot-input" accept="image/*">
-                        <div class="screenshot-preview" style="display: none;">
-                            <img src="" alt="Podgląd zrzutu ekranu">
-                            <button type="button" class="btn-remove-screenshot">Usuń zdjęcie</button>
-                        </div>
+                    <label>Zdjęcia:</label>
+                    <button type="button" class="btn-add-screenshot btn btn-secondary btn-small">+ Dodaj zdjęcie</button>
+                    <div class="screenshots-container">
+                        <!-- Screenshots will be added here dynamically -->
                     </div>
                 </div>
             </div>
+        </div>
+    </template>
+
+    <!-- Hidden template for screenshot items -->
+    <template id="screenshot-item-template">
+        <div class="screenshot-item">
+            <div class="screenshot-preview">
+                <img src="" alt="Zdjęcie">
+            </div>
+            <div class="screenshot-description-wrapper">
+                <label>Opis zdjęcia:</label>
+                <textarea class="screenshot-description" rows="2" placeholder="Opcjonalny opis zdjęcia..."></textarea>
+            </div>
+            <button type="button" class="btn-remove-screenshot-item" title="Usuń zdjęcie">✕ Usuń</button>
         </div>
     </template>
 

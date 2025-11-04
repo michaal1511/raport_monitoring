@@ -264,13 +264,12 @@ function addContentItem(data = null) {
         container.querySelector('.content-problems').value = data.problems || '';
         container.querySelector('.content-fixes').value = data.fixes || '';
 
-        // Handle screenshot
-        if (data.screenshot) {
-            const preview = container.querySelector('.screenshot-preview');
-            const img = preview.querySelector('img');
-            img.src = data.screenshot;
-            preview.style.display = 'block';
-            container.querySelector('.screenshot-input').style.display = 'none';
+        // Handle screenshots (multiple)
+        if (data.screenshots && data.screenshots.length > 0) {
+            const screenshotsContainer = container.querySelector('.screenshots-container');
+            data.screenshots.forEach(screenshot => {
+                addScreenshotToContainer(screenshotsContainer, screenshot.image, screenshot.description);
+            });
         }
     }
 
@@ -281,37 +280,47 @@ function addContentItem(data = null) {
         updateItemNumbers();
     });
 
-    // Setup screenshot upload
-    const screenshotInput = container.querySelector('.screenshot-input');
-    screenshotInput.addEventListener('change', (e) => handleScreenshotUpload(e, container));
-
-    // Setup screenshot remove
-    const removeScreenshotBtn = container.querySelector('.btn-remove-screenshot');
-    removeScreenshotBtn.addEventListener('click', () => {
-        const preview = container.querySelector('.screenshot-preview');
-        preview.style.display = 'none';
-        preview.querySelector('img').src = '';
-        screenshotInput.value = '';
-        screenshotInput.style.display = 'block';
+    // Setup add screenshot button
+    const addScreenshotBtn = container.querySelector('.btn-add-screenshot');
+    addScreenshotBtn.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const screenshotsContainer = container.querySelector('.screenshots-container');
+                    addScreenshotToContainer(screenshotsContainer, event.target.result, '');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
     });
 
     document.getElementById('content-list').appendChild(clone);
 }
 
-// Handle screenshot upload
-function handleScreenshotUpload(event, container) {
-    const file = event.target.files[0];
-    if (!file) return;
+// Add screenshot to container
+function addScreenshotToContainer(container, imageSrc, description = '') {
+    const template = document.getElementById('screenshot-item-template');
+    const clone = template.content.cloneNode(true);
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const preview = container.querySelector('.screenshot-preview');
-        const img = preview.querySelector('img');
-        img.src = e.target.result;
-        preview.style.display = 'block';
-        event.target.style.display = 'none';
-    };
-    reader.readAsDataURL(file);
+    const screenshotItem = clone.querySelector('.screenshot-item');
+    const img = clone.querySelector('.screenshot-preview img');
+    const descriptionTextarea = clone.querySelector('.screenshot-description');
+    const removeBtn = clone.querySelector('.btn-remove-screenshot-item');
+
+    img.src = imageSrc;
+    descriptionTextarea.value = description;
+
+    removeBtn.addEventListener('click', () => {
+        screenshotItem.remove();
+    });
+
+    container.appendChild(clone);
 }
 
 // Update item numbers after deletion
@@ -337,15 +346,27 @@ function collectFormData() {
 
     const items = document.querySelectorAll('.content-item');
     items.forEach(item => {
-        const screenshotImg = item.querySelector('.screenshot-preview img');
-        const screenshotSrc = screenshotImg.src || '';
+        // Collect all screenshots with descriptions
+        const screenshots = [];
+        const screenshotItems = item.querySelectorAll('.screenshot-item');
+        screenshotItems.forEach(screenshotItem => {
+            const img = screenshotItem.querySelector('.screenshot-preview img');
+            const description = screenshotItem.querySelector('.screenshot-description').value;
+
+            if (img.src) {
+                screenshots.push({
+                    image: img.src,
+                    description: description
+                });
+            }
+        });
 
         data.contentItems.push({
             type: item.querySelector('.content-type').value,
             url: item.querySelector('.content-url').value,
             problems: item.querySelector('.content-problems').value,
             fixes: item.querySelector('.content-fixes').value,
-            screenshot: screenshotSrc
+            screenshots: screenshots
         });
     });
 
@@ -508,11 +529,15 @@ async function exportToPDF() {
         addPageElements();
 
         // Title
-        pdf.setFontSize(18);
+        pdf.setFontSize(16);
         pdf.setFont(undefined, 'bold');
         const title = `Monitoring strony - ${document.getElementById('current-date').textContent}`;
-        pdf.text(title, pageWidth / 2, yPosition, { align: 'center' });
-        yPosition += lineHeight * 2;
+        const titleLines = pdf.splitTextToSize(title, contentWidth);
+        titleLines.forEach(line => {
+            pdf.text(line, pageWidth / 2, yPosition, { align: 'center' });
+            yPosition += lineHeight * 1.2;
+        });
+        yPosition += lineHeight;
 
         // Form data
         pdf.setFontSize(12);
@@ -525,24 +550,27 @@ async function exportToPDF() {
         pdf.setFont(undefined, 'bold');
         pdf.text('Data monitoringu:', margin, yPosition);
         pdf.setFont(undefined, 'normal');
-        pdf.text(formData.monitoringDate, margin + 50, yPosition);
-        yPosition += lineHeight;
+        const dateLines = pdf.splitTextToSize(formData.monitoringDate, contentWidth - 50);
+        pdf.text(dateLines, margin + 50, yPosition);
+        yPosition += Math.max(lineHeight, dateLines.length * lineHeight);
 
         // Wykonawca
-        checkNewPage();
+        checkNewPage(10);
         pdf.setFont(undefined, 'bold');
         pdf.text('Wykonawca:', margin, yPosition);
         pdf.setFont(undefined, 'normal');
-        pdf.text(formData.wykonawca, margin + 50, yPosition);
-        yPosition += lineHeight;
+        const wykonawcaLines = pdf.splitTextToSize(formData.wykonawca, contentWidth - 50);
+        pdf.text(wykonawcaLines, margin + 50, yPosition);
+        yPosition += Math.max(lineHeight, wykonawcaLines.length * lineHeight);
 
         // Klient
-        checkNewPage();
+        checkNewPage(10);
         pdf.setFont(undefined, 'bold');
         pdf.text('Klient:', margin, yPosition);
         pdf.setFont(undefined, 'normal');
-        pdf.text(formData.klient, margin + 50, yPosition);
-        yPosition += lineHeight;
+        const klientLines = pdf.splitTextToSize(formData.klient, contentWidth - 50);
+        pdf.text(klientLines, margin + 50, yPosition);
+        yPosition += Math.max(lineHeight, klientLines.length * lineHeight);
 
         // Zakres raportu
         checkNewPage(20);
@@ -555,12 +583,14 @@ async function exportToPDF() {
         yPosition += zakresLines.length * lineHeight;
 
         // Okres monitoringu
-        checkNewPage();
+        checkNewPage(10);
         pdf.setFont(undefined, 'bold');
         pdf.text('Okres monitoringu:', margin, yPosition);
         pdf.setFont(undefined, 'normal');
-        pdf.text(`${formData.okresOd} do ${formData.okresDo}`, margin + 50, yPosition);
-        yPosition += lineHeight * 2;
+        const okresText = `${formData.okresOd} do ${formData.okresDo}`;
+        const okresLines = pdf.splitTextToSize(okresText, contentWidth - 50);
+        pdf.text(okresLines, margin + 50, yPosition);
+        yPosition += Math.max(lineHeight, okresLines.length * lineHeight) + lineHeight;
 
         // Lista zweryfikowanych treści
         checkNewPage();
@@ -587,8 +617,9 @@ async function exportToPDF() {
             pdf.setFont(undefined, 'bold');
             pdf.text('Typ treści:', margin + 5, yPosition);
             pdf.setFont(undefined, 'normal');
-            pdf.text(item.type, margin + 35, yPosition);
-            yPosition += lineHeight;
+            const typeLines = pdf.splitTextToSize(item.type, contentWidth - 40);
+            pdf.text(typeLines, margin + 35, yPosition);
+            yPosition += Math.max(lineHeight, typeLines.length * lineHeight);
 
             // URL
             checkNewPage();
@@ -620,24 +651,53 @@ async function exportToPDF() {
             pdf.text(fixesLines, margin + 10, yPosition);
             yPosition += fixesLines.length * lineHeight;
 
-            // Screenshot
-            if (item.screenshot && item.screenshot.startsWith('data:image')) {
-                checkNewPage(80);
+            // Screenshots (multiple with descriptions)
+            if (item.screenshots && item.screenshots.length > 0) {
+                checkNewPage(15);
                 pdf.setFont(undefined, 'bold');
-                pdf.text('Zrzut ekranu:', margin + 5, yPosition);
+                pdf.text('Zdjęcia:', margin + 5, yPosition);
                 yPosition += lineHeight;
 
-                try {
-                    const imgWidth = contentWidth - 10;
-                    const imgHeight = 100; // Max height
+                for (let j = 0; j < item.screenshots.length; j++) {
+                    const screenshot = item.screenshots[j];
 
-                    pdf.addImage(item.screenshot, 'JPEG', margin + 10, yPosition, imgWidth, imgHeight);
-                    yPosition += imgHeight + 5;
-                } catch (error) {
-                    console.error('Error adding image:', error);
-                    pdf.setFont(undefined, 'italic');
-                    pdf.text('[Błąd wczytywania obrazu]', margin + 10, yPosition);
-                    yPosition += lineHeight;
+                    if (screenshot.image && screenshot.image.startsWith('data:image')) {
+                        // Add screenshot number if there are multiple
+                        if (item.screenshots.length > 1) {
+                            checkNewPage(10);
+                            pdf.setFont(undefined, 'bold');
+                            pdf.setFontSize(9);
+                            pdf.text(`Zdjęcie ${j + 1}:`, margin + 10, yPosition);
+                            yPosition += lineHeight * 0.8;
+                            pdf.setFontSize(10);
+                        }
+
+                        // Add description if exists
+                        if (screenshot.description && screenshot.description.trim()) {
+                            checkNewPage(10);
+                            pdf.setFont(undefined, 'italic');
+                            const descLines = pdf.splitTextToSize(screenshot.description, contentWidth - 15);
+                            pdf.text(descLines, margin + 10, yPosition);
+                            yPosition += descLines.length * lineHeight;
+                        }
+
+                        // Calculate image dimensions
+                        try {
+                            const maxImgWidth = contentWidth - 15;
+                            const maxImgHeight = 80;
+
+                            // Check if we need a new page for the image
+                            checkNewPage(maxImgHeight + 10);
+
+                            pdf.addImage(screenshot.image, 'JPEG', margin + 10, yPosition, maxImgWidth, maxImgHeight);
+                            yPosition += maxImgHeight + 5;
+                        } catch (error) {
+                            console.error('Error adding image:', error);
+                            pdf.setFont(undefined, 'italic');
+                            pdf.text('[Błąd wczytywania obrazu]', margin + 10, yPosition);
+                            yPosition += lineHeight;
+                        }
+                    }
                 }
             }
 

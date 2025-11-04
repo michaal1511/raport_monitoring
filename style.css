@@ -149,36 +149,86 @@ h3 {
     gap: 15px;
 }
 
-.screenshot-upload {
+.btn-add-screenshot {
+    margin-bottom: 15px;
+}
+
+.screenshots-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.screenshot-item {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    position: relative;
 }
 
 .screenshot-preview {
-    position: relative;
-    margin-top: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border-radius: 5px;
+    padding: 10px;
 }
 
 .screenshot-preview img {
     max-width: 100%;
-    max-height: 400px;
+    max-height: 300px;
     border-radius: 5px;
-    border: 2px solid #ddd;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.btn-remove-screenshot {
-    margin-top: 10px;
-    padding: 8px 16px;
+.screenshot-description-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.screenshot-description-wrapper label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #555;
+}
+
+.screenshot-description {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+.screenshot-description:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-remove-screenshot-item {
+    align-self: flex-end;
+    padding: 6px 12px;
     background: #dc3545;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
+    transition: background 0.3s;
 }
 
-.btn-remove-screenshot:hover {
+.btn-remove-screenshot-item:hover {
     background: #c82333;
 }
 
