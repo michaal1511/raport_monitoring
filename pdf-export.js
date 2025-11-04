@@ -110,6 +110,20 @@ async function exportToPDF() {
     try {
         const htmlContent = createPDFContent();
 
+        // Create temporary element that is visible for rendering
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        tempDiv.style.position = 'fixed';
+        tempDiv.style.top = '0';
+        tempDiv.style.left = '0';
+        tempDiv.style.width = '210mm';
+        tempDiv.style.backgroundColor = 'white';
+        tempDiv.style.zIndex = '10000';
+        tempDiv.style.overflow = 'auto';
+        tempDiv.style.maxHeight = '100vh';
+
+        document.body.appendChild(tempDiv);
+
         // Get current timestamp for filename
         const now = new Date();
         const pdfTimestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -117,25 +131,31 @@ async function exportToPDF() {
 
         // Configure PDF options
         const opt = {
-            margin: [10, 10, 10, 10],
+            margin: 10,
             filename: filename,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: {
                 scale: 2,
                 useCORS: true,
                 letterRendering: true,
-                logging: false
+                logging: false,
+                windowWidth: 794  // A4 width in pixels at 96 DPI
             },
             jsPDF: {
                 unit: 'mm',
                 format: 'a4',
                 orientation: 'portrait'
-            },
-            pagebreak: { mode: 'avoid-all' }
+            }
         };
 
-        // Generate PDF directly from HTML string
-        await html2pdf().set(opt).from(htmlContent).save();
+        // Wait a moment for rendering
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Generate PDF from the visible element
+        await html2pdf().set(opt).from(tempDiv).save();
+
+        // Remove temporary element
+        document.body.removeChild(tempDiv);
 
     } catch (error) {
         console.error('Error generating PDF:', error);
