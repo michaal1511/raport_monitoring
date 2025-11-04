@@ -121,8 +121,28 @@ async function exportToPDF() {
         tempDiv.style.zIndex = '10000';
         tempDiv.style.overflow = 'auto';
         tempDiv.style.maxHeight = '100vh';
+        tempDiv.style.padding = '20px';
 
         document.body.appendChild(tempDiv);
+
+        // Wait for all images to load
+        const images = tempDiv.querySelectorAll('img');
+        const imagePromises = Array.from(images).map(img => {
+            if (img.complete) {
+                return Promise.resolve();
+            }
+            return new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = resolve; // Resolve anyway to not block PDF generation
+                // Timeout after 5 seconds
+                setTimeout(resolve, 5000);
+            });
+        });
+
+        await Promise.all(imagePromises);
+
+        // Additional wait for fonts and rendering
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // Get current timestamp for filename
         const now = new Date();
@@ -137,8 +157,9 @@ async function exportToPDF() {
             html2canvas: {
                 scale: 2,
                 useCORS: true,
+                allowTaint: true,
                 letterRendering: true,
-                logging: false,
+                logging: true,
                 windowWidth: 794  // A4 width in pixels at 96 DPI
             },
             jsPDF: {
@@ -147,9 +168,6 @@ async function exportToPDF() {
                 orientation: 'portrait'
             }
         };
-
-        // Wait a moment for rendering
-        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Generate PDF from the visible element
         await html2pdf().set(opt).from(tempDiv).save();
