@@ -536,6 +536,43 @@ header #update-data-btn {
     border-color: #667eea;
 }
 
+/* Quill Editor Styles */
+.editor-wrapper {
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    transition: border-color 0.3s;
+}
+
+.editor-wrapper:focus-within {
+    border-color: #667eea;
+}
+
+.editor-wrapper .ql-toolbar {
+    border: none;
+    border-bottom: 1px solid #ddd;
+    background: #f8f9fa;
+    border-radius: 5px 5px 0 0;
+}
+
+.editor-wrapper .ql-container {
+    border: none;
+    font-size: 14px;
+    min-height: 120px;
+    font-family: inherit;
+}
+
+.editor-wrapper .ql-editor {
+    min-height: 120px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.editor-wrapper .ql-editor.ql-blank::before {
+    font-style: italic;
+    color: #999;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .container {

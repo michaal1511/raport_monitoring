@@ -59,10 +59,10 @@ function createPDFContent() {
                 <p style="margin: 5px 0 8px 20px; word-wrap: break-word; overflow-wrap: break-word; font-size: 10pt;">${escapeHtml(item.url)}</p>
 
                 <p style="margin: 8px 0; margin-left: 10px;"><strong>Zidentyfikowane problemy:</strong></p>
-                <p style="margin: 5px 0 8px 20px; white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(item.problems)}</p>
+                <div style="margin: 5px 0 8px 20px; word-wrap: break-word; line-height: 1.6;">${item.problems}</div>
 
                 <p style="margin: 8px 0; margin-left: 10px;"><strong>Wprowadzone poprawki:</strong></p>
-                <p style="margin: 5px 0 8px 20px; white-space: pre-wrap; word-wrap: break-word;">${escapeHtml(item.fixes)}</p>
+                <div style="margin: 5px 0 8px 20px; word-wrap: break-word; line-height: 1.6;">${item.fixes}</div>
         `;
 
         // Add screenshots
@@ -114,6 +114,51 @@ async function exportToPDF() {
                     font-family: Arial, sans-serif;
                 }
 
+                /* Quill content styles */
+                strong {
+                    font-weight: bold;
+                }
+
+                em {
+                    font-style: italic;
+                }
+
+                u {
+                    text-decoration: underline;
+                }
+
+                ul, ol {
+                    margin: 10px 0;
+                    padding-left: 30px;
+                }
+
+                li {
+                    margin: 5px 0;
+                }
+
+                pre {
+                    background-color: #f4f4f4;
+                    border: 1px solid #ddd;
+                    border-radius: 3px;
+                    padding: 10px;
+                    overflow-x: auto;
+                    margin: 10px 0;
+                    font-family: 'Courier New', monospace;
+                    font-size: 11pt;
+                }
+
+                code {
+                    background-color: #f4f4f4;
+                    padding: 2px 5px;
+                    border-radius: 3px;
+                    font-family: 'Courier New', monospace;
+                }
+
+                a {
+                    color: #667eea;
+                    text-decoration: underline;
+                }
+
                 @media print {
                     body {
                         -webkit-print-color-adjust: exact;
@@ -127,6 +172,10 @@ async function exportToPDF() {
                     * {
                         -webkit-print-color-adjust: exact;
                         print-color-adjust: exact;
+                    }
+
+                    pre, code {
+                        background-color: #f4f4f4 !important;
                     }
                 }
             </style>

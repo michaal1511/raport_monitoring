@@ -257,22 +257,6 @@ function addContentItem(data = null) {
     const container = clone.querySelector('.content-item');
     container.dataset.itemId = contentItemCounter;
 
-    // If data is provided, populate fields
-    if (data) {
-        container.querySelector('.content-type').value = data.type || '';
-        container.querySelector('.content-url').value = data.url || '';
-        container.querySelector('.content-problems').value = data.problems || '';
-        container.querySelector('.content-fixes').value = data.fixes || '';
-
-        // Handle screenshots (multiple)
-        if (data.screenshots && data.screenshots.length > 0) {
-            const screenshotsContainer = container.querySelector('.screenshots-container');
-            data.screenshots.forEach(screenshot => {
-                addScreenshotToContainer(screenshotsContainer, screenshot.image, screenshot.description);
-            });
-        }
-    }
-
     // Setup remove button
     const removeBtn = container.querySelector('.btn-remove');
     removeBtn.addEventListener('click', () => {
@@ -300,7 +284,63 @@ function addContentItem(data = null) {
         input.click();
     });
 
+    // Add to DOM first
     document.getElementById('content-list').appendChild(clone);
+
+    // Now initialize Quill editors (they need to be in DOM)
+    const actualContainer = document.getElementById('content-list').lastElementChild;
+
+    const problemsEditor = new Quill(actualContainer.querySelector('.content-problems-editor'), {
+        theme: 'snow',
+        placeholder: 'Opisz zidentyfikowane problemy...',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link', 'code-block'],
+                ['clean']
+            ]
+        }
+    });
+
+    const fixesEditor = new Quill(actualContainer.querySelector('.content-fixes-editor'), {
+        theme: 'snow',
+        placeholder: 'Opisz wprowadzone poprawki...',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link', 'code-block'],
+                ['clean']
+            ]
+        }
+    });
+
+    // Store Quill instances on the container
+    actualContainer.quilProblemsEditor = problemsEditor;
+    actualContainer.quillFixesEditor = fixesEditor;
+
+    // If data is provided, populate fields
+    if (data) {
+        actualContainer.querySelector('.content-type').value = data.type || '';
+        actualContainer.querySelector('.content-url').value = data.url || '';
+
+        // Set Quill content (can be HTML or plain text)
+        if (data.problems) {
+            problemsEditor.root.innerHTML = data.problems;
+        }
+        if (data.fixes) {
+            fixesEditor.root.innerHTML = data.fixes;
+        }
+
+        // Handle screenshots (multiple)
+        if (data.screenshots && data.screenshots.length > 0) {
+            const screenshotsContainer = actualContainer.querySelector('.screenshots-container');
+            data.screenshots.forEach(screenshot => {
+                addScreenshotToContainer(screenshotsContainer, screenshot.image, screenshot.description);
+            });
+        }
+    }
 }
 
 // Add screenshot to container
@@ -361,11 +401,15 @@ function collectFormData() {
             }
         });
 
+        // Get HTML content from Quill editors
+        const problemsHTML = item.quilProblemsEditor ? item.quilProblemsEditor.root.innerHTML : '';
+        const fixesHTML = item.quillFixesEditor ? item.quillFixesEditor.root.innerHTML : '';
+
         data.contentItems.push({
             type: item.querySelector('.content-type').value,
             url: item.querySelector('.content-url').value,
-            problems: item.querySelector('.content-problems').value,
-            fixes: item.querySelector('.content-fixes').value,
+            problems: problemsHTML,
+            fixes: fixesHTML,
             screenshots: screenshots
         });
     });
