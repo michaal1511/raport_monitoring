@@ -284,6 +284,26 @@ function addContentItem(data = null) {
         input.click();
     });
 
+    // Setup fetch title button
+    const fetchTitleBtn = container.querySelector('.btn-fetch-title');
+    const urlInput = container.querySelector('.content-url');
+    const titleInput = container.querySelector('.content-title');
+
+    fetchTitleBtn.addEventListener('click', () => {
+        fetchPageTitle(urlInput.value, titleInput, fetchTitleBtn);
+    });
+
+    // Auto-fetch title when URL is pasted
+    urlInput.addEventListener('paste', (e) => {
+        // Small delay to get the pasted value
+        setTimeout(() => {
+            const url = urlInput.value.trim();
+            if (url && isValidUrl(url) && !titleInput.value.trim()) {
+                fetchPageTitle(url, titleInput, fetchTitleBtn);
+            }
+        }, 100);
+    });
+
     // Add to DOM first
     document.getElementById('content-list').appendChild(clone);
 
@@ -323,6 +343,7 @@ function addContentItem(data = null) {
     // If data is provided, populate fields
     if (data) {
         actualContainer.querySelector('.content-type').value = data.type || '';
+        actualContainer.querySelector('.content-title').value = data.title || '';
         actualContainer.querySelector('.content-url').value = data.url || '';
 
         // Set Quill content (can be HTML or plain text)
@@ -407,6 +428,7 @@ function collectFormData() {
 
         data.contentItems.push({
             type: item.querySelector('.content-type').value,
+            title: item.querySelector('.content-title').value,
             url: item.querySelector('.content-url').value,
             problems: problemsHTML,
             fixes: fixesHTML,
@@ -505,4 +527,68 @@ function loadFromJSON(event) {
 
     // Reset file input
     event.target.value = '';
+}
+
+// Validate URL
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
+// Fetch page title from URL
+async function fetchPageTitle(url, titleInput, button) {
+    if (!url || !isValidUrl(url)) {
+        alert('Wprowadź poprawny adres URL');
+        return;
+    }
+
+    // Show loading state
+    const originalText = button.textContent;
+    button.textContent = '⏳';
+    button.disabled = true;
+    button.classList.add('loading');
+
+    try {
+        // Try using allorigins.win CORS proxy
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+
+        const response = await fetch(proxyUrl, {
+            timeout: 10000
+        });
+
+        if (!response.ok) {
+            throw new Error('Nie udało się pobrać strony');
+        }
+
+        const data = await response.json();
+        const html = data.contents;
+
+        // Extract title from HTML
+        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+
+        if (titleMatch && titleMatch[1]) {
+            // Decode HTML entities and clean up
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = titleMatch[1];
+            const title = tempDiv.textContent.trim();
+
+            titleInput.value = title;
+        } else {
+            alert('Nie znaleziono tytułu na stronie');
+        }
+    } catch (error) {
+        console.error('Error fetching title:', error);
+
+        // Try alternative: cors-anywhere or just show error
+        alert('Nie udało się pobrać tytułu. Możesz wpisać tytuł ręcznie.\n\nPowód: ' + (error.message || 'Problem z połączeniem'));
+    } finally {
+        // Restore button state
+        button.textContent = originalText;
+        button.disabled = false;
+        button.classList.remove('loading');
+    }
 }

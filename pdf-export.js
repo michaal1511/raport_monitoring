@@ -55,6 +55,8 @@ function createPDFContent() {
 
                 <p style="margin: 8px 0; margin-left: 10px;"><strong>Typ treści:</strong> ${escapeHtml(item.type)}</p>
 
+                ${item.title ? `<p style="margin: 8px 0; margin-left: 10px;"><strong>Tytuł:</strong> ${escapeHtml(item.title)}</p>` : ''}
+
                 <p style="margin: 8px 0; margin-left: 10px;"><strong>Adres URL:</strong></p>
                 <p style="margin: 5px 0 8px 20px; word-wrap: break-word; overflow-wrap: break-word; font-size: 10pt;">${escapeHtml(item.url)}</p>
 
