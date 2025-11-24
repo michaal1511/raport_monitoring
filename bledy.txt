@@ -1,0 +1,15 @@
+Brak tekstu alternatywnego dla obrazu
+Niewystarczający kontrast kolorów (wymagany min. 4.5:1)
+Brak nagłówków strukturalnych (H1-H6)
+Formularz bez etykiet (label) dla pól
+Brak możliwości nawigacji klawiaturą
+Link bez opisowego tekstu (np. "kliknij tutaj")
+Brak informacji o języku strony
+Automatycznie odtwarzające się multimedia
+Tekst zbyt mały (poniżej 16px)
+Brak widocznego fokusa na elementach interaktywnych
+Tabela bez nagłówków (th) lub opisów
+Dokument PDF niedostępny dla czytników ekranu
+Brak transkrypcji dla materiałów audio
+Brak napisów dla materiałów wideo
+Animacje bez możliwości zatrzymania

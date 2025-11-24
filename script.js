@@ -1,9 +1,11 @@
 // Application state
 let klienciData = [];
 let wykonawcaName = '';
+let bledyTemplates = [];
+let poprawkiTemplates = [];
 let contentItemCounter = 0;
 let autosaveInterval;
-let filesLoaded = { wykonawca: false, klienci: false };
+let filesLoaded = { wykonawca: false, klienci: false, bledy: true, poprawki: true }; // bledy/poprawki optional
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,23 +47,29 @@ function setupConfigListeners() {
     // File input listeners
     document.getElementById('wykonawca-file').addEventListener('change', handleWykonawcaFile);
     document.getElementById('klienci-file').addEventListener('change', handleKlienciFile);
+    document.getElementById('bledy-file').addEventListener('change', handleBledyFile);
+    document.getElementById('poprawki-file').addEventListener('change', handlePoprawkiFile);
 
     // Save configuration
     document.getElementById('save-config-btn').addEventListener('click', saveConfiguration);
 
     // Cancel configuration (only if data already exists)
     document.getElementById('cancel-config-btn').addEventListener('click', () => {
-        filesLoaded = { wykonawca: false, klienci: false };
+        filesLoaded = { wykonawca: false, klienci: false, bledy: true, poprawki: true };
         hideConfigModal();
     });
 
     // Update data button
     document.getElementById('update-data-btn').addEventListener('click', () => {
-        filesLoaded = { wykonawca: false, klienci: false };
+        filesLoaded = { wykonawca: false, klienci: false, bledy: true, poprawki: true };
         document.getElementById('wykonawca-file').value = '';
         document.getElementById('klienci-file').value = '';
+        document.getElementById('bledy-file').value = '';
+        document.getElementById('poprawki-file').value = '';
         document.getElementById('wykonawca-status').textContent = '';
         document.getElementById('klienci-status').textContent = '';
+        document.getElementById('bledy-status').textContent = '';
+        document.getElementById('poprawki-status').textContent = '';
         document.getElementById('save-config-btn').disabled = true;
         showConfigModal();
     });
@@ -130,6 +138,56 @@ function handleKlienciFile(event) {
     reader.readAsText(file);
 }
 
+// Handle bledy file upload
+function handleBledyFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const text = e.target.result;
+        bledyTemplates = text.split('\n').filter(line => line.trim()).map(line => line.trim());
+
+        const statusDiv = document.getElementById('bledy-status');
+        statusDiv.textContent = `✓ Wczytano ${bledyTemplates.length} szablonów błędów`;
+        statusDiv.className = 'file-status success';
+    };
+
+    reader.onerror = () => {
+        const statusDiv = document.getElementById('bledy-status');
+        statusDiv.textContent = '✗ Błąd wczytywania pliku';
+        statusDiv.className = 'file-status error';
+        bledyTemplates = [];
+    };
+
+    reader.readAsText(file);
+}
+
+// Handle poprawki file upload
+function handlePoprawkiFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const text = e.target.result;
+        poprawkiTemplates = text.split('\n').filter(line => line.trim()).map(line => line.trim());
+
+        const statusDiv = document.getElementById('poprawki-status');
+        statusDiv.textContent = `✓ Wczytano ${poprawkiTemplates.length} szablonów poprawek`;
+        statusDiv.className = 'file-status success';
+    };
+
+    reader.onerror = () => {
+        const statusDiv = document.getElementById('poprawki-status');
+        statusDiv.textContent = '✗ Błąd wczytywania pliku';
+        statusDiv.className = 'file-status error';
+        poprawkiTemplates = [];
+    };
+
+    reader.readAsText(file);
+}
+
 // Check if both files are loaded
 function checkFilesLoaded() {
     const saveBtn = document.getElementById('save-config-btn');
@@ -140,6 +198,8 @@ function checkFilesLoaded() {
 function saveConfiguration() {
     localStorage.setItem('wykonawca_data', wykonawcaName);
     localStorage.setItem('klienci_data', JSON.stringify(klienciData));
+    localStorage.setItem('bledy_templates', JSON.stringify(bledyTemplates));
+    localStorage.setItem('poprawki_templates', JSON.stringify(poprawkiTemplates));
 
     hideConfigModal();
     loadDataFromStorage();
@@ -150,6 +210,8 @@ function saveConfiguration() {
 function loadDataFromStorage() {
     wykonawcaName = localStorage.getItem('wykonawca_data') || '';
     const savedKlienci = localStorage.getItem('klienci_data');
+    const savedBledy = localStorage.getItem('bledy_templates');
+    const savedPoprawki = localStorage.getItem('poprawki_templates');
 
     if (savedKlienci) {
         try {
@@ -157,6 +219,24 @@ function loadDataFromStorage() {
         } catch (error) {
             console.error('Error parsing klienci data:', error);
             klienciData = [];
+        }
+    }
+
+    if (savedBledy) {
+        try {
+            bledyTemplates = JSON.parse(savedBledy);
+        } catch (error) {
+            console.error('Error parsing bledy templates:', error);
+            bledyTemplates = [];
+        }
+    }
+
+    if (savedPoprawki) {
+        try {
+            poprawkiTemplates = JSON.parse(savedPoprawki);
+        } catch (error) {
+            console.error('Error parsing poprawki templates:', error);
+            poprawkiTemplates = [];
         }
     }
 }
@@ -339,6 +419,57 @@ function addContentItem(data = null) {
     // Store Quill instances on the container
     actualContainer.quilProblemsEditor = problemsEditor;
     actualContainer.quillFixesEditor = fixesEditor;
+
+    // Populate template dropdowns
+    const problemsSelect = actualContainer.querySelector('.problems-template-select');
+    const fixesSelect = actualContainer.querySelector('.fixes-template-select');
+
+    // Add bledy templates to problems dropdown
+    if (bledyTemplates.length > 0) {
+        bledyTemplates.forEach((template, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = template.length > 80 ? template.substring(0, 80) + '...' : template;
+            option.dataset.fullText = template;
+            problemsSelect.appendChild(option);
+        });
+    } else {
+        problemsSelect.disabled = true;
+        problemsSelect.querySelector('option').textContent = '-- Brak szablonów błędów --';
+    }
+
+    // Add poprawki templates to fixes dropdown
+    if (poprawkiTemplates.length > 0) {
+        poprawkiTemplates.forEach((template, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = template.length > 80 ? template.substring(0, 80) + '...' : template;
+            option.dataset.fullText = template;
+            fixesSelect.appendChild(option);
+        });
+    } else {
+        fixesSelect.disabled = true;
+        fixesSelect.querySelector('option').textContent = '-- Brak szablonów poprawek --';
+    }
+
+    // Setup insert template buttons
+    const insertButtons = actualContainer.querySelectorAll('.btn-insert-template');
+    insertButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.target;
+            const select = target === 'problems' ? problemsSelect : fixesSelect;
+            const editor = target === 'problems' ? problemsEditor : fixesEditor;
+
+            const selectedOption = select.selectedOptions[0];
+            if (selectedOption && selectedOption.value !== '') {
+                const templateText = selectedOption.dataset.fullText;
+                insertTemplateToEditor(editor, templateText);
+                select.value = ''; // Reset selection
+            } else {
+                alert('Wybierz szablon z listy');
+            }
+        });
+    });
 
     // If data is provided, populate fields
     if (data) {
@@ -537,6 +668,31 @@ function isValidUrl(string) {
     } catch (_) {
         return false;
     }
+}
+
+// Insert template text into Quill editor
+function insertTemplateToEditor(editor, text) {
+    // Get current selection or end of content
+    const selection = editor.getSelection();
+    const cursorPosition = selection ? selection.index : editor.getLength();
+
+    // Check if we need to add a newline before the text
+    const currentContent = editor.getText();
+    const needsNewline = cursorPosition > 0 && currentContent.charAt(cursorPosition - 1) !== '\n';
+
+    if (needsNewline) {
+        editor.insertText(cursorPosition, '\n');
+        editor.insertText(cursorPosition + 1, text);
+    } else {
+        editor.insertText(cursorPosition, text);
+    }
+
+    // Move cursor to end of inserted text
+    const newPosition = cursorPosition + (needsNewline ? 1 : 0) + text.length;
+    editor.setSelection(newPosition, 0);
+
+    // Focus the editor
+    editor.focus();
 }
 
 // Fetch page title from URL

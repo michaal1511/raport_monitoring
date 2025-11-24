@@ -28,11 +28,25 @@
                     <div class="file-status" id="klienci-status"></div>
                 </div>
 
+                <div class="form-group">
+                    <label for="bledy-file">📄 Plik szablonów błędów (bledy.txt) - opcjonalny:</label>
+                    <input type="file" id="bledy-file" accept=".txt">
+                    <div class="file-status" id="bledy-status"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="poprawki-file">📄 Plik szablonów poprawek (poprawki.txt) - opcjonalny:</label>
+                    <input type="file" id="poprawki-file" accept=".txt">
+                    <div class="file-status" id="poprawki-status"></div>
+                </div>
+
                 <div class="config-info">
                     <p><strong>Format plików:</strong></p>
                     <ul>
                         <li><code>wykonawca.txt</code> - jedna linia z nazwą wykonawcy</li>
                         <li><code>klienci.txt</code> - każdy klient w nowej linii: Nazwa | Numer umowy</li>
+                        <li><code>bledy.txt</code> - każdy szablon błędu w nowej linii</li>
+                        <li><code>poprawki.txt</code> - każdy szablon poprawki w nowej linii</li>
                     </ul>
                 </div>
 
@@ -141,6 +155,12 @@
 
                 <div class="form-group">
                     <label>Zidentyfikowane problemy:</label>
+                    <div class="template-selector">
+                        <select class="problems-template-select">
+                            <option value="">-- Wybierz szablon błędu --</option>
+                        </select>
+                        <button type="button" class="btn-insert-template btn btn-secondary btn-small" data-target="problems">+ Wstaw</button>
+                    </div>
                     <div class="editor-wrapper">
                         <div class="content-problems-editor"></div>
                     </div>
@@ -148,6 +168,12 @@
 
                 <div class="form-group">
                     <label>Wprowadzone poprawki:</label>
+                    <div class="template-selector">
+                        <select class="fixes-template-select">
+                            <option value="">-- Wybierz szablon poprawki --</option>
+                        </select>
+                        <button type="button" class="btn-insert-template btn btn-secondary btn-small" data-target="fixes">+ Wstaw</button>
+                    </div>
                     <div class="editor-wrapper">
                         <div class="content-fixes-editor"></div>
                     </div>
