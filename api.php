@@ -1,0 +1,455 @@
+<?php
+/**
+ * API Endpoint for Raport Monitoring Application
+ *
+ * Endpoints:
+ * GET  /api.php?action=get_config           - Get configuration (wykonawca, klienci, templates)
+ * POST /api.php?action=update_wykonawca     - Update wykonawca name
+ * POST /api.php?action=add_klient           - Add client
+ * POST /api.php?action=update_klient        - Update client
+ * POST /api.php?action=delete_klient        - Delete client
+ * POST /api.php?action=add_blad_template    - Add error template
+ * POST /api.php?action=delete_blad_template - Delete error template
+ * POST /api.php?action=add_poprawka_template    - Add fix template
+ * POST /api.php?action=delete_poprawka_template - Delete fix template
+ * GET  /api.php?action=get_reports          - Get all reports
+ * GET  /api.php?action=get_report&id=X      - Get specific report
+ * POST /api.php?action=save_report          - Save/update report
+ * POST /api.php?action=delete_report        - Delete report
+ */
+
+require_once 'config.php';
+
+// Get action from query string
+$action = $_GET['action'] ?? '';
+
+// Get database connection
+$pdo = getDbConnection();
+
+// Route to appropriate handler
+switch ($action) {
+    case 'get_config':
+        getConfig($pdo);
+        break;
+
+    case 'update_wykonawca':
+        updateWykonawca($pdo);
+        break;
+
+    case 'add_klient':
+        addKlient($pdo);
+        break;
+
+    case 'update_klient':
+        updateKlient($pdo);
+        break;
+
+    case 'delete_klient':
+        deleteKlient($pdo);
+        break;
+
+    case 'add_blad_template':
+        addBladTemplate($pdo);
+        break;
+
+    case 'delete_blad_template':
+        deleteBladTemplate($pdo);
+        break;
+
+    case 'add_poprawka_template':
+        addPoprawkaTemplate($pdo);
+        break;
+
+    case 'delete_poprawka_template':
+        deletePoprawkaTemplate($pdo);
+        break;
+
+    case 'get_reports':
+        getReports($pdo);
+        break;
+
+    case 'get_report':
+        getReport($pdo);
+        break;
+
+    case 'save_report':
+        saveReport($pdo);
+        break;
+
+    case 'delete_report':
+        deleteReport($pdo);
+        break;
+
+    default:
+        sendError('Invalid action', 400);
+}
+
+// ========================================
+// CONFIGURATION HANDLERS
+// ========================================
+
+function getConfig($pdo) {
+    try {
+        // Get wykonawca
+        $stmt = $pdo->prepare("SELECT config_value FROM config WHERE config_key = 'wykonawca'");
+        $stmt->execute();
+        $wykonawca = $stmt->fetchColumn() ?: 'Nazwa wykonawcy';
+
+        // Get klienci
+        $stmt = $pdo->query("SELECT id, nazwa, numer_umowy FROM klienci ORDER BY nazwa");
+        $klienci = $stmt->fetchAll();
+
+        // Get bledy templates
+        $stmt = $pdo->query("SELECT id, opis FROM bledy_templates ORDER BY id");
+        $bledy = $stmt->fetchAll();
+
+        // Get poprawki templates
+        $stmt = $pdo->query("SELECT id, opis FROM poprawki_templates ORDER BY id");
+        $poprawki = $stmt->fetchAll();
+
+        sendResponse([
+            'wykonawca' => $wykonawca,
+            'klienci' => $klienci,
+            'bledy' => $bledy,
+            'poprawki' => $poprawki
+        ]);
+    } catch (Exception $e) {
+        sendError('Failed to get config: ' . $e->getMessage(), 500);
+    }
+}
+
+function updateWykonawca($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['nazwa']) || empty(trim($data['nazwa']))) {
+        sendError('Nazwa wykonawcy jest wymagana');
+    }
+
+    try {
+        $stmt = $pdo->prepare("UPDATE config SET config_value = ? WHERE config_key = 'wykonawca'");
+        $stmt->execute([trim($data['nazwa'])]);
+
+        sendResponse(['success' => true, 'message' => 'Wykonawca zaktualizowany']);
+    } catch (Exception $e) {
+        sendError('Failed to update wykonawca: ' . $e->getMessage(), 500);
+    }
+}
+
+function addKlient($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['nazwa']) || !isset($data['numer_umowy'])) {
+        sendError('Nazwa i numer umowy są wymagane');
+    }
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO klienci (nazwa, numer_umowy) VALUES (?, ?)");
+        $stmt->execute([trim($data['nazwa']), trim($data['numer_umowy'])]);
+
+        sendResponse([
+            'success' => true,
+            'id' => $pdo->lastInsertId(),
+            'message' => 'Klient dodany'
+        ]);
+    } catch (Exception $e) {
+        sendError('Failed to add klient: ' . $e->getMessage(), 500);
+    }
+}
+
+function updateKlient($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['id']) || !isset($data['nazwa']) || !isset($data['numer_umowy'])) {
+        sendError('ID, nazwa i numer umowy są wymagane');
+    }
+
+    try {
+        $stmt = $pdo->prepare("UPDATE klienci SET nazwa = ?, numer_umowy = ? WHERE id = ?");
+        $stmt->execute([trim($data['nazwa']), trim($data['numer_umowy']), $data['id']]);
+
+        sendResponse(['success' => true, 'message' => 'Klient zaktualizowany']);
+    } catch (Exception $e) {
+        sendError('Failed to update klient: ' . $e->getMessage(), 500);
+    }
+}
+
+function deleteKlient($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['id'])) {
+        sendError('ID klienta jest wymagane');
+    }
+
+    try {
+        $stmt = $pdo->prepare("DELETE FROM klienci WHERE id = ?");
+        $stmt->execute([$data['id']]);
+
+        sendResponse(['success' => true, 'message' => 'Klient usunięty']);
+    } catch (Exception $e) {
+        sendError('Failed to delete klient: ' . $e->getMessage(), 500);
+    }
+}
+
+function addBladTemplate($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['opis']) || empty(trim($data['opis']))) {
+        sendError('Opis błędu jest wymagany');
+    }
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO bledy_templates (opis) VALUES (?)");
+        $stmt->execute([trim($data['opis'])]);
+
+        sendResponse([
+            'success' => true,
+            'id' => $pdo->lastInsertId(),
+            'message' => 'Szablon błędu dodany'
+        ]);
+    } catch (Exception $e) {
+        sendError('Failed to add template: ' . $e->getMessage(), 500);
+    }
+}
+
+function deleteBladTemplate($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['id'])) {
+        sendError('ID szablonu jest wymagane');
+    }
+
+    try {
+        $stmt = $pdo->prepare("DELETE FROM bledy_templates WHERE id = ?");
+        $stmt->execute([$data['id']]);
+
+        sendResponse(['success' => true, 'message' => 'Szablon usunięty']);
+    } catch (Exception $e) {
+        sendError('Failed to delete template: ' . $e->getMessage(), 500);
+    }
+}
+
+function addPoprawkaTemplate($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['opis']) || empty(trim($data['opis']))) {
+        sendError('Opis poprawki jest wymagany');
+    }
+
+    try {
+        $stmt = $pdo->prepare("INSERT INTO poprawki_templates (opis) VALUES (?)");
+        $stmt->execute([trim($data['opis'])]);
+
+        sendResponse([
+            'success' => true,
+            'id' => $pdo->lastInsertId(),
+            'message' => 'Szablon poprawki dodany'
+        ]);
+    } catch (Exception $e) {
+        sendError('Failed to add template: ' . $e->getMessage(), 500);
+    }
+}
+
+function deletePoprawkaTemplate($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['id'])) {
+        sendError('ID szablonu jest wymagane');
+    }
+
+    try {
+        $stmt = $pdo->prepare("DELETE FROM poprawki_templates WHERE id = ?");
+        $stmt->execute([$data['id']]);
+
+        sendResponse(['success' => true, 'message' => 'Szablon usunięty']);
+    } catch (Exception $e) {
+        sendError('Failed to delete template: ' . $e->getMessage(), 500);
+    }
+}
+
+// ========================================
+// REPORT HANDLERS
+// ========================================
+
+function getReports($pdo) {
+    try {
+        $stmt = $pdo->query("
+            SELECT r.*, k.nazwa as klient_nazwa
+            FROM reports r
+            LEFT JOIN klienci k ON r.klient_id = k.id
+            ORDER BY r.created_at DESC
+        ");
+        $reports = $stmt->fetchAll();
+
+        sendResponse(['reports' => $reports]);
+    } catch (Exception $e) {
+        sendError('Failed to get reports: ' . $e->getMessage(), 500);
+    }
+}
+
+function getReport($pdo) {
+    $id = $_GET['id'] ?? null;
+
+    if (!$id) {
+        sendError('Report ID jest wymagane');
+    }
+
+    try {
+        // Get report
+        $stmt = $pdo->prepare("
+            SELECT r.*, k.nazwa as klient_nazwa, k.numer_umowy
+            FROM reports r
+            LEFT JOIN klienci k ON r.klient_id = k.id
+            WHERE r.id = ?
+        ");
+        $stmt->execute([$id]);
+        $report = $stmt->fetch();
+
+        if (!$report) {
+            sendError('Raport nie znaleziony', 404);
+        }
+
+        // Get report items
+        $stmt = $pdo->prepare("
+            SELECT * FROM report_items
+            WHERE report_id = ?
+            ORDER BY item_order
+        ");
+        $stmt->execute([$id]);
+        $items = $stmt->fetchAll();
+
+        // Get screenshots for each item
+        foreach ($items as &$item) {
+            $stmt = $pdo->prepare("
+                SELECT id, image_data, opis, screenshot_order
+                FROM screenshots
+                WHERE report_item_id = ?
+                ORDER BY screenshot_order
+            ");
+            $stmt->execute([$item['id']]);
+            $item['screenshots'] = $stmt->fetchAll();
+        }
+
+        $report['items'] = $items;
+
+        sendResponse(['report' => $report]);
+    } catch (Exception $e) {
+        sendError('Failed to get report: ' . $e->getMessage(), 500);
+    }
+}
+
+function saveReport($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!$data) {
+        sendError('Nieprawidłowe dane');
+    }
+
+    try {
+        $pdo->beginTransaction();
+
+        $reportId = $data['id'] ?? null;
+
+        if ($reportId) {
+            // Update existing report
+            $stmt = $pdo->prepare("
+                UPDATE reports SET
+                    monitoring_date = ?,
+                    klient_id = ?,
+                    zakres = ?,
+                    okres_od = ?,
+                    okres_do = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([
+                $data['monitoringDate'],
+                $data['klientId'],
+                $data['zakres'],
+                $data['okresOd'],
+                $data['okresDo'],
+                $reportId
+            ]);
+
+            // Delete old items and screenshots (cascade will handle screenshots)
+            $stmt = $pdo->prepare("DELETE FROM report_items WHERE report_id = ?");
+            $stmt->execute([$reportId]);
+        } else {
+            // Create new report
+            $stmt = $pdo->prepare("
+                INSERT INTO reports (monitoring_date, klient_id, zakres, okres_od, okres_do)
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $data['monitoringDate'],
+                $data['klientId'],
+                $data['zakres'],
+                $data['okresOd'],
+                $data['okresDo']
+            ]);
+            $reportId = $pdo->lastInsertId();
+        }
+
+        // Insert report items
+        if (isset($data['contentItems']) && is_array($data['contentItems'])) {
+            foreach ($data['contentItems'] as $order => $item) {
+                $stmt = $pdo->prepare("
+                    INSERT INTO report_items (report_id, item_order, typ_tresci, tytul, url, problemy, poprawki)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
+                    $reportId,
+                    $order,
+                    $item['type'] ?? '',
+                    $item['title'] ?? '',
+                    $item['url'] ?? '',
+                    $item['problems'] ?? '',
+                    $item['fixes'] ?? ''
+                ]);
+                $itemId = $pdo->lastInsertId();
+
+                // Insert screenshots
+                if (isset($item['screenshots']) && is_array($item['screenshots'])) {
+                    foreach ($item['screenshots'] as $screenshotOrder => $screenshot) {
+                        $stmt = $pdo->prepare("
+                            INSERT INTO screenshots (report_item_id, screenshot_order, image_data, opis)
+                            VALUES (?, ?, ?, ?)
+                        ");
+                        $stmt->execute([
+                            $itemId,
+                            $screenshotOrder,
+                            $screenshot['image'] ?? '',
+                            $screenshot['description'] ?? ''
+                        ]);
+                    }
+                }
+            }
+        }
+
+        $pdo->commit();
+
+        sendResponse([
+            'success' => true,
+            'id' => $reportId,
+            'message' => 'Raport zapisany'
+        ]);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        sendError('Failed to save report: ' . $e->getMessage(), 500);
+    }
+}
+
+function deleteReport($pdo) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['id'])) {
+        sendError('Report ID jest wymagane');
+    }
+
+    try {
+        $stmt = $pdo->prepare("DELETE FROM reports WHERE id = ?");
+        $stmt->execute([$data['id']]);
+
+        sendResponse(['success' => true, 'message' => 'Raport usunięty']);
+    } catch (Exception $e) {
+        sendError('Failed to delete report: ' . $e->getMessage(), 500);
+    }
+}

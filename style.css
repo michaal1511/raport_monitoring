@@ -723,3 +723,222 @@ header #update-data-btn {
         width: 100%;
     }
 }
+
+/* Loading Overlay */
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-overlay p {
+    color: white;
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* Config Modal Tabs */
+.config-modal-content {
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.config-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+}
+
+.config-tab {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.config-tab:hover {
+    color: #667eea;
+    background: #f8f9fa;
+}
+
+.config-tab.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.config-tab-content {
+    display: none;
+}
+
+.config-tab-content.active {
+    display: block;
+}
+
+.config-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.config-list-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #555;
+}
+
+.config-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.config-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border-radius: 5px;
+    border: 2px solid #ddd;
+    transition: all 0.3s;
+}
+
+.config-list-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.config-item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.config-item-content strong {
+    font-size: 16px;
+    color: #333;
+}
+
+.config-item-meta {
+    font-size: 13px;
+    color: #666;
+}
+
+.config-item-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.empty-message {
+    text-align: center;
+    color: #999;
+    padding: 40px 20px;
+    font-style: italic;
+}
+
+/* Reports List */
+.reports-list {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.report-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border: 2px solid #ddd;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+}
+
+.report-list-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.report-item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.report-item-content strong {
+    font-size: 16px;
+    color: #333;
+}
+
+.report-item-meta {
+    font-size: 13px;
+    color: #666;
+}
+
+.report-item-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Responsive for web version */
+@media (max-width: 768px) {
+    .config-tabs {
+        flex-wrap: wrap;
+    }
+
+    .config-tab {
+        flex: 1 1 45%;
+        text-align: center;
+    }
+
+    .config-list-item,
+    .report-list-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .config-item-actions,
+    .report-item-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .config-item-actions button,
+    .report-item-actions button {
+        flex: 1;
+    }
+}
