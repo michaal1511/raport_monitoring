@@ -1,24 +1,41 @@
 <?php
 /**
- * API Endpoint for Raport Monitoring Application
+ * API Endpoint for Raport Monitoring Application v2.0
+ * With Authentication and Role-based Access Control
  *
- * Endpoints:
- * GET  /api.php?action=get_config           - Get configuration (wykonawca, klienci, templates)
- * POST /api.php?action=update_wykonawca     - Update wykonawca name
- * POST /api.php?action=add_klient           - Add client
- * POST /api.php?action=update_klient        - Update client
- * POST /api.php?action=delete_klient        - Delete client
- * POST /api.php?action=add_blad_template    - Add error template
+ * Authentication Endpoints:
+ * POST /api.php?action=login              - Login
+ * POST /api.php?action=logout             - Logout
+ * GET  /api.php?action=check_auth         - Check if logged in
+ * POST /api.php?action=change_password    - Change password
+ *
+ * User Management (Admin only):
+ * GET  /api.php?action=get_users          - Get all users
+ * POST /api.php?action=create_user        - Create new user
+ * POST /api.php?action=update_user        - Update user
+ * POST /api.php?action=delete_user        - Delete user
+ * POST /api.php?action=reset_password     - Reset user password
+ *
+ * Configuration Endpoints (Authenticated):
+ * GET  /api.php?action=get_config         - Get configuration
+ * POST /api.php?action=update_wykonawca   - Update wykonawca name
+ * POST /api.php?action=add_klient         - Add client
+ * POST /api.php?action=update_klient      - Update client
+ * POST /api.php?action=delete_klient      - Delete client
+ * POST /api.php?action=add_blad_template  - Add error template
  * POST /api.php?action=delete_blad_template - Delete error template
- * POST /api.php?action=add_poprawka_template    - Add fix template
+ * POST /api.php?action=add_poprawka_template - Add fix template
  * POST /api.php?action=delete_poprawka_template - Delete fix template
- * GET  /api.php?action=get_reports          - Get all reports
- * GET  /api.php?action=get_report&id=X      - Get specific report
- * POST /api.php?action=save_report          - Save/update report
- * POST /api.php?action=delete_report        - Delete report
+ *
+ * Report Endpoints (Authenticated):
+ * GET  /api.php?action=get_reports        - Get reports (filtered by role)
+ * GET  /api.php?action=get_report&id=X    - Get specific report
+ * POST /api.php?action=save_report        - Save/update report
+ * POST /api.php?action=delete_report      - Delete report
  */
 
 require_once 'config.php';
+require_once 'auth.php';
 
 // Get action from query string
 $action = $_GET['action'] ?? '';
@@ -26,8 +43,68 @@ $action = $_GET['action'] ?? '';
 // Get database connection
 $pdo = getDbConnection();
 
+// Public endpoints (no auth required)
+$publicEndpoints = ['login'];
+
+// Check authentication for protected endpoints
+if (!in_array($action, $publicEndpoints)) {
+    if (!isLoggedIn()) {
+        sendError('Wymagane logowanie', 401);
+    }
+}
+
 // Route to appropriate handler
 switch ($action) {
+    // ========================================
+    // AUTHENTICATION
+    // ========================================
+    case 'login':
+        handleLogin();
+        break;
+
+    case 'logout':
+        handleLogout();
+        break;
+
+    case 'check_auth':
+        handleCheckAuth();
+        break;
+
+    case 'change_password':
+        handleChangePassword();
+        break;
+
+    // ========================================
+    // USER MANAGEMENT (Admin only)
+    // ========================================
+    case 'get_users':
+        requireAdmin();
+        handleGetUsers();
+        break;
+
+    case 'create_user':
+        requireAdmin();
+        handleCreateUser();
+        break;
+
+    case 'update_user':
+        requireAdmin();
+        handleUpdateUser();
+        break;
+
+    case 'delete_user':
+        requireAdmin();
+        handleDeleteUser();
+        break;
+
+    case 'reset_password':
+        requireAdmin();
+        handleResetPassword();
+        break;
+
+    // ========================================
+    // CONFIGURATION
+    // ========================================
     case 'get_config':
         getConfig($pdo);
         break;
@@ -64,6 +141,9 @@ switch ($action) {
         deletePoprawkaTemplate($pdo);
         break;
 
+    // ========================================
+    // REPORTS
+    // ========================================
     case 'get_reports':
         getReports($pdo);
         break;
@@ -82,6 +162,114 @@ switch ($action) {
 
     default:
         sendError('Invalid action', 400);
+}
+
+// ========================================
+// AUTHENTICATION HANDLERS
+// ========================================
+
+function handleLogin() {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['username']) || !isset($data['password'])) {
+        sendError('Login i hasło są wymagane');
+    }
+
+    $result = loginUser($data['username'], $data['password']);
+    sendResponse($result, $result['success'] ? 200 : 401);
+}
+
+function handleLogout() {
+    $result = logoutUser();
+    sendResponse($result);
+}
+
+function handleCheckAuth() {
+    if (isLoggedIn()) {
+        sendResponse([
+            'authenticated' => true,
+            'user' => getCurrentUser()
+        ]);
+    } else {
+        sendResponse(['authenticated' => false]);
+    }
+}
+
+function handleChangePassword() {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['old_password']) || !isset($data['new_password'])) {
+        sendError('Stare i nowe hasło są wymagane');
+    }
+
+    $user = getCurrentUser();
+    $result = changePassword($user['id'], $data['old_password'], $data['new_password']);
+    sendResponse($result, $result['success'] ? 200 : 400);
+}
+
+// ========================================
+// USER MANAGEMENT HANDLERS
+// ========================================
+
+function handleGetUsers() {
+    $users = getAllUsers();
+    sendResponse(['users' => $users]);
+}
+
+function handleCreateUser() {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['username']) || !isset($data['password']) || !isset($data['role'])) {
+        sendError('Username, password i role są wymagane');
+    }
+
+    $result = createUser(
+        $data['username'],
+        $data['password'],
+        $data['email'] ?? '',
+        $data['full_name'] ?? '',
+        $data['role']
+    );
+    sendResponse($result, $result['success'] ? 200 : 400);
+}
+
+function handleUpdateUser() {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['id'])) {
+        sendError('ID użytkownika jest wymagane');
+    }
+
+    $result = updateUser(
+        $data['id'],
+        $data['email'] ?? '',
+        $data['full_name'] ?? '',
+        $data['role'] ?? 'audytor',
+        $data['active'] ?? 1
+    );
+    sendResponse($result, $result['success'] ? 200 : 400);
+}
+
+function handleDeleteUser() {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['id'])) {
+        sendError('ID użytkownika jest wymagane');
+    }
+
+    $result = deleteUser($data['id']);
+    sendResponse($result, $result['success'] ? 200 : 400);
+}
+
+function handleResetPassword() {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!isset($data['user_id']) || !isset($data['new_password'])) {
+        sendError('User ID i nowe hasło są wymagane');
+    }
+
+    $result = resetUserPassword($data['user_id'], $data['new_password']);
+    sendResponse($result, $result['success'] ? 200 : 400);
 }
 
 // ========================================
@@ -272,12 +460,28 @@ function deletePoprawkaTemplate($pdo) {
 
 function getReports($pdo) {
     try {
-        $stmt = $pdo->query("
-            SELECT r.*, k.nazwa as klient_nazwa
-            FROM reports r
-            LEFT JOIN klienci k ON r.klient_id = k.id
-            ORDER BY r.created_at DESC
-        ");
+        $user = getCurrentUser();
+
+        // Administrator sees all reports, auditor only their own
+        if (isAdministrator()) {
+            $stmt = $pdo->query("
+                SELECT r.*, k.nazwa as klient_nazwa, u.full_name as audytor_name
+                FROM reports r
+                LEFT JOIN klienci k ON r.klient_id = k.id
+                LEFT JOIN users u ON r.user_id = u.id
+                ORDER BY r.created_at DESC
+            ");
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT r.*, k.nazwa as klient_nazwa
+                FROM reports r
+                LEFT JOIN klienci k ON r.klient_id = k.id
+                WHERE r.user_id = ?
+                ORDER BY r.created_at DESC
+            ");
+            $stmt->execute([$user['id']]);
+        }
+
         $reports = $stmt->fetchAll();
 
         sendResponse(['reports' => $reports]);
@@ -294,6 +498,8 @@ function getReport($pdo) {
     }
 
     try {
+        $user = getCurrentUser();
+
         // Get report
         $stmt = $pdo->prepare("
             SELECT r.*, k.nazwa as klient_nazwa, k.numer_umowy
@@ -308,6 +514,11 @@ function getReport($pdo) {
             sendError('Raport nie znaleziony', 404);
         }
 
+        // Check permissions: administrator can see all, auditor only their own
+        if (!isAdministrator() && $report['user_id'] != $user['id']) {
+            sendError('Brak uprawnień do tego raportu', 403);
+        }
+
         // Get report items
         $stmt = $pdo->prepare("
             SELECT * FROM report_items
@@ -317,10 +528,10 @@ function getReport($pdo) {
         $stmt->execute([$id]);
         $items = $stmt->fetchAll();
 
-        // Get screenshots for each item
+        // Get screenshots for each item with timestamps
         foreach ($items as &$item) {
             $stmt = $pdo->prepare("
-                SELECT id, image_data, opis, screenshot_order
+                SELECT id, image_data, opis, screenshot_order, upload_timestamp
                 FROM screenshots
                 WHERE report_item_id = ?
                 ORDER BY screenshot_order
@@ -347,9 +558,23 @@ function saveReport($pdo) {
     try {
         $pdo->beginTransaction();
 
+        $user = getCurrentUser();
         $reportId = $data['id'] ?? null;
 
         if ($reportId) {
+            // Check permissions: administrator can edit all, auditor only their own
+            $stmt = $pdo->prepare("SELECT user_id FROM reports WHERE id = ?");
+            $stmt->execute([$reportId]);
+            $existingReport = $stmt->fetch();
+
+            if (!$existingReport) {
+                sendError('Raport nie znaleziony', 404);
+            }
+
+            if (!isAdministrator() && $existingReport['user_id'] != $user['id']) {
+                sendError('Brak uprawnień do edycji tego raportu', 403);
+            }
+
             // Update existing report
             $stmt = $pdo->prepare("
                 UPDATE reports SET
@@ -373,12 +598,13 @@ function saveReport($pdo) {
             $stmt = $pdo->prepare("DELETE FROM report_items WHERE report_id = ?");
             $stmt->execute([$reportId]);
         } else {
-            // Create new report
+            // Create new report - assign to current user
             $stmt = $pdo->prepare("
-                INSERT INTO reports (monitoring_date, klient_id, zakres, okres_od, okres_do)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO reports (user_id, monitoring_date, klient_id, zakres, okres_od, okres_do)
+                VALUES (?, ?, ?, ?, ?, ?)
             ");
             $stmt->execute([
+                $user['id'],
                 $data['monitoringDate'],
                 $data['klientId'],
                 $data['zakres'],
@@ -406,18 +632,19 @@ function saveReport($pdo) {
                 ]);
                 $itemId = $pdo->lastInsertId();
 
-                // Insert screenshots
+                // Insert screenshots with timestamps
                 if (isset($item['screenshots']) && is_array($item['screenshots'])) {
                     foreach ($item['screenshots'] as $screenshotOrder => $screenshot) {
                         $stmt = $pdo->prepare("
-                            INSERT INTO screenshots (report_item_id, screenshot_order, image_data, opis)
-                            VALUES (?, ?, ?, ?)
+                            INSERT INTO screenshots (report_item_id, screenshot_order, image_data, opis, upload_timestamp)
+                            VALUES (?, ?, ?, ?, ?)
                         ");
                         $stmt->execute([
                             $itemId,
                             $screenshotOrder,
                             $screenshot['image'] ?? '',
-                            $screenshot['description'] ?? ''
+                            $screenshot['description'] ?? '',
+                            $screenshot['upload_timestamp'] ?? date('Y-m-d H:i:s')
                         ]);
                     }
                 }
@@ -445,6 +672,21 @@ function deleteReport($pdo) {
     }
 
     try {
+        $user = getCurrentUser();
+
+        // Check permissions: administrator can delete all, auditor only their own
+        $stmt = $pdo->prepare("SELECT user_id FROM reports WHERE id = ?");
+        $stmt->execute([$data['id']]);
+        $report = $stmt->fetch();
+
+        if (!$report) {
+            sendError('Raport nie znaleziony', 404);
+        }
+
+        if (!isAdministrator() && $report['user_id'] != $user['id']) {
+            sendError('Brak uprawnień do usunięcia tego raportu', 403);
+        }
+
         $stmt = $pdo->prepare("DELETE FROM reports WHERE id = ?");
         $stmt->execute([$data['id']]);
 
