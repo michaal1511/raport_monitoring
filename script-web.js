@@ -5,16 +5,63 @@ let bledyTemplates = [];
 let poprawkiTemplates = [];
 let contentItemCounter = 0;
 let currentReportId = null;
+let currentUser = null;
 
 // API Base URL - zmień to na adres swojego serwera
 const API_URL = 'api.php';
 
 // Initialize application
-document.addEventListener('DOMContentLoaded', () => {
-    loadConfiguration();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check authentication first
+    await checkAuthentication();
+
+    await loadConfiguration();
     setupEventListeners();
     setCurrentDate();
+    updateUserInfo();
 });
+
+// Check if user is authenticated
+async function checkAuthentication() {
+    try {
+        const result = await apiCall('check_auth');
+        if (!result.authenticated) {
+            // Redirect to login
+            window.location.href = 'login.html';
+            return;
+        }
+        currentUser = result.user;
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        window.location.href = 'login.html';
+    }
+}
+
+// Update user info display
+function updateUserInfo() {
+    if (currentUser) {
+        const userInfo = document.getElementById('user-info');
+        if (userInfo) {
+            userInfo.innerHTML = `
+                <span class="user-name">👤 ${currentUser.full_name || currentUser.username}</span>
+                <span class="user-role">${currentUser.role === 'administrator' ? 'Administrator' : 'Audytor'}</span>
+            `;
+        }
+    }
+}
+
+// Logout function
+async function logout() {
+    if (confirm('Czy na pewno chcesz się wylogować?')) {
+        try {
+            await apiCall('logout', {}, 'POST');
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Logout failed:', error);
+            window.location.href = 'login.html';
+        }
+    }
+}
 
 // ========================================
 // API FUNCTIONS
@@ -166,6 +213,12 @@ function setupEventListeners() {
     document.getElementById('add-klient-btn').addEventListener('click', () => addKlientPrompt());
     document.getElementById('add-blad-btn').addEventListener('click', () => addTemplatePrompt('blad'));
     document.getElementById('add-poprawka-btn').addEventListener('click', () => addTemplatePrompt('poprawka'));
+
+    // Logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
 }
 
 // ========================================
@@ -431,7 +484,8 @@ function addContentItem(data = null) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const screenshotsContainer = container.querySelector('.screenshots-container');
-                    addScreenshotToContainer(screenshotsContainer, event.target.result, '');
+                    const timestamp = new Date().toLocaleString('pl-PL');
+                    addScreenshotToContainer(screenshotsContainer, event.target.result, '', timestamp);
                 };
                 reader.readAsDataURL(file);
             }
@@ -566,14 +620,15 @@ function addContentItem(data = null) {
                 addScreenshotToContainer(
                     screenshotsContainer,
                     screenshot.image_data || screenshot.image,
-                    screenshot.opis || screenshot.description
+                    screenshot.opis || screenshot.description,
+                    screenshot.upload_timestamp
                 );
             });
         }
     }
 }
 
-function addScreenshotToContainer(container, imageSrc, description = '') {
+function addScreenshotToContainer(container, imageSrc, description = '', uploadTimestamp = null) {
     const template = document.getElementById('screenshot-item-template');
     const clone = template.content.cloneNode(true);
 
@@ -581,9 +636,21 @@ function addScreenshotToContainer(container, imageSrc, description = '') {
     const img = clone.querySelector('.screenshot-preview img');
     const descriptionTextarea = clone.querySelector('.screenshot-description');
     const removeBtn = clone.querySelector('.btn-remove-screenshot-item');
+    const timestampSpan = clone.querySelector('.screenshot-timestamp');
 
     img.src = imageSrc;
     descriptionTextarea.value = description;
+
+    // Set timestamp
+    if (uploadTimestamp) {
+        const timestamp = typeof uploadTimestamp === 'string' ? uploadTimestamp : new Date(uploadTimestamp).toLocaleString('pl-PL');
+        timestampSpan.textContent = `Dodano: ${timestamp}`;
+        screenshotItem.dataset.timestamp = uploadTimestamp;
+    } else {
+        const now = new Date().toISOString();
+        timestampSpan.textContent = `Dodano: ${new Date(now).toLocaleString('pl-PL')}`;
+        screenshotItem.dataset.timestamp = now;
+    }
 
     removeBtn.addEventListener('click', () => {
         screenshotItem.remove();
@@ -649,11 +716,13 @@ async function saveReport() {
         screenshotItems.forEach(screenshotItem => {
             const img = screenshotItem.querySelector('.screenshot-preview img');
             const description = screenshotItem.querySelector('.screenshot-description').value;
+            const timestamp = screenshotItem.dataset.timestamp || new Date().toISOString();
 
             if (img.src) {
                 screenshots.push({
                     image: img.src,
-                    description: description
+                    description: description,
+                    upload_timestamp: timestamp
                 });
             }
         });
