@@ -1,6 +1,48 @@
 // Create HTML content for PDF
 function createPDFContent() {
-    const formData = collectFormData();
+    // Collect form data directly
+    const formData = {
+        monitoringDate: document.getElementById('monitoring-date').value,
+        wykonawca: document.getElementById('wykonawca').value,
+        klient: document.getElementById('klient').selectedOptions[0]?.textContent || '',
+        zakres: document.getElementById('zakres').value,
+        okresOd: document.getElementById('okres-od').value,
+        okresDo: document.getElementById('okres-do').value,
+        contentItems: []
+    };
+
+    // Collect content items
+    const items = document.querySelectorAll('.content-item');
+    items.forEach(item => {
+        // Collect screenshots
+        const screenshots = [];
+        const screenshotItems = item.querySelectorAll('.screenshot-item');
+        screenshotItems.forEach(screenshotItem => {
+            const img = screenshotItem.querySelector('.screenshot-preview img');
+            const description = screenshotItem.querySelector('.screenshot-description').value;
+
+            if (img.src) {
+                screenshots.push({
+                    image: img.src,
+                    description: description
+                });
+            }
+        });
+
+        // Get HTML content from Quill editors
+        const problemsHTML = item.quilProblemsEditor ? item.quilProblemsEditor.root.innerHTML : '';
+        const fixesHTML = item.quillFixesEditor ? item.quillFixesEditor.root.innerHTML : '';
+
+        formData.contentItems.push({
+            type: item.querySelector('.content-type').value,
+            title: item.querySelector('.content-title').value,
+            url: item.querySelector('.content-url').value,
+            problems: problemsHTML,
+            fixes: fixesHTML,
+            screenshots: screenshots
+        });
+    });
+
     const now = new Date();
     const timestamp = now.toLocaleString('pl-PL', {
         year: 'numeric',
@@ -12,6 +54,7 @@ function createPDFContent() {
     });
 
     const currentDate = document.getElementById('current-date').textContent;
+    const wykonawcaName = formData.wykonawca;
 
     // Helper function to escape HTML
     function escapeHtml(text) {
