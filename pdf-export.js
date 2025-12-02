@@ -20,11 +20,13 @@ function createPDFContent() {
         screenshotItems.forEach(screenshotItem => {
             const img = screenshotItem.querySelector('.screenshot-preview img');
             const description = screenshotItem.querySelector('.screenshot-description').value;
+            const timestamp = screenshotItem.dataset.timestamp;
 
             if (img.src) {
                 screenshots.push({
                     image: img.src,
-                    description: description
+                    description: description,
+                    timestamp: timestamp
                 });
             }
         });
@@ -128,6 +130,15 @@ function createPDFContent() {
                 if (screenshot.image) {
                     html += `<img src="${screenshot.image}" style="max-width: 100%; height: auto; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px;" />`;
                 }
+
+                // Add timestamp if available
+                if (screenshot.timestamp) {
+                    const timestampFormatted = typeof screenshot.timestamp === 'string' && screenshot.timestamp.includes('T')
+                        ? new Date(screenshot.timestamp).toLocaleString('pl-PL')
+                        : screenshot.timestamp;
+                    html += `<p style="margin: 5px 0; font-size: 9pt; color: #999; font-style: italic;">Dodano: ${timestampFormatted}</p>`;
+                }
+
                 html += `</div>`;
             });
         }
