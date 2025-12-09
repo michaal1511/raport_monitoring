@@ -326,6 +326,7 @@ function getConfig($pdo) {
         $poprawki = $stmt->fetchAll();
 
         sendResponse([
+            'success' => true,
             'wykonawca' => $wykonawca,
             'klienci' => $klienci,
             'bledy' => $bledy,
@@ -514,7 +515,7 @@ function getReports($pdo) {
 
         $reports = $stmt->fetchAll();
 
-        sendResponse(['reports' => $reports]);
+        sendResponse(['success' => true, 'reports' => $reports]);
     } catch (Exception $e) {
         sendError('Failed to get reports: ' . $e->getMessage(), 500);
     }
@@ -572,7 +573,7 @@ function getReport($pdo) {
 
         $report['items'] = $items;
 
-        sendResponse(['report' => $report]);
+        sendResponse(['success' => true, 'report' => $report]);
     } catch (Exception $e) {
         sendError('Failed to get report: ' . $e->getMessage(), 500);
     }
@@ -760,7 +761,7 @@ function getScans($pdo) {
 
         $scans = $stmt->fetchAll();
 
-        sendResponse(['scans' => $scans]);
+        sendResponse(['success' => true, 'scans' => $scans]);
     } catch (Exception $e) {
         sendError('Failed to get scans: ' . $e->getMessage(), 500);
     }
@@ -804,7 +805,7 @@ function getScan($pdo) {
             sendError('Skan nie znaleziony lub brak uprawnień', 404);
         }
 
-        sendResponse(['scan' => $scan]);
+        sendResponse(['success' => true, 'scan' => $scan]);
     } catch (Exception $e) {
         sendError('Failed to get scan: ' . $e->getMessage(), 500);
     }

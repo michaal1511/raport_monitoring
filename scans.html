@@ -461,14 +461,20 @@
         // Authentication
         async function checkAuthentication() {
             try {
-                const result = await apiCall('check_auth');
-                if (!result.authenticated) {
+                const response = await fetch(`${API_URL}?action=check_auth`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+                const result = await response.json();
+
+                if (!response.ok || !result.authenticated) {
                     window.location.href = 'login.html';
                     return;
                 }
                 currentUser = result.user;
                 updateUserInfo();
             } catch (error) {
+                console.error('Auth check error:', error);
                 window.location.href = 'login.html';
             }
         }
@@ -724,7 +730,13 @@
             const response = await fetch(url, options);
             const result = await response.json();
 
-            if (!response.ok || !result.success) {
+            // Check for errors
+            if (!response.ok) {
+                throw new Error(result.error || 'API call failed');
+            }
+
+            // For most endpoints, check success field. But some endpoints (like get_config) don't have it
+            if (result.hasOwnProperty('success') && !result.success) {
                 throw new Error(result.error || 'API call failed');
             }
 
