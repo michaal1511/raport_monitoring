@@ -18,11 +18,11 @@
             align-items: center;
             margin-bottom: 30px;
             padding-bottom: 15px;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #000;
         }
 
         .client-view-header h1 {
-            color: #667eea;
+            color: #000;
             margin: 0;
         }
 
@@ -75,8 +75,8 @@
 
         .tab.active {
             background: white;
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: #000;
+            border-bottom-color: #000;
         }
 
         .tab-content {
@@ -98,7 +98,7 @@
         }
 
         .data-table thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             color: white;
         }
 
@@ -171,13 +171,14 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             color: white;
         }
 
         .btn-primary:hover {
+            background: #333;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
 
         .btn-secondary {
@@ -249,7 +250,7 @@
 
         .loading-spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid #000;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -263,7 +264,7 @@
 
         .client-name {
             font-size: 24px;
-            color: #667eea;
+            color: #000;
             font-weight: 600;
             margin-bottom: 20px;
         }
@@ -286,7 +287,7 @@
         .stat-number {
             font-size: 36px;
             font-weight: 700;
-            color: #667eea;
+            color: #000;
         }
 
         .stat-label {
@@ -524,6 +525,9 @@
                         ${currentUser.role === 'administrator' ? `<td>${escapeHtml(report.audytor_name || report.username)}</td>` : ''}
                         <td>${createdDate}</td>
                         <td>
+                            <button onclick="previewReport(${report.id})" class="btn btn-primary btn-small" title="Podgląd">
+                                👁️
+                            </button>
                             <button onclick="editReport(${report.id})" class="btn btn-secondary btn-small" title="Edytuj">
                                 ✏️
                             </button>
@@ -614,6 +618,217 @@
         }
 
         // Report actions
+        async function previewReport(reportId) {
+            showLoading();
+            try {
+                const result = await apiCall(`get_report&id=${reportId}`);
+                const report = result.report;
+
+                // Generate PDF-like preview
+                const htmlContent = generateReportPreview(report);
+
+                // Open in new window
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                if (!printWindow) {
+                    alert('Zablokowano wyskakujące okno! Pozwól na wyskakujące okna dla tej strony.');
+                    return;
+                }
+
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+            } catch (error) {
+                console.error('Failed to preview report:', error);
+                alert('Nie udało się załadować podglądu raportu');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function generateReportPreview(report) {
+            const now = new Date().toLocaleString('pl-PL');
+
+            function escapeHtmlForPreview(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            let html = `
+                <!DOCTYPE html>
+                <html lang="pl">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Podgląd raportu</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            font-size: 11pt;
+                            padding: 20px;
+                            max-width: 800px;
+                            margin: 0 auto;
+                            background: white;
+                            color: black;
+                        }
+                        h1 {
+                            text-align: center;
+                            color: black;
+                            font-size: 18pt;
+                            margin-bottom: 20px;
+                            border-bottom: 2px solid black;
+                            padding-bottom: 10px;
+                        }
+                        h2 {
+                            color: black;
+                            font-size: 16pt;
+                            margin-top: 30px;
+                            margin-bottom: 15px;
+                            border-bottom: 2px solid black;
+                            padding-bottom: 5px;
+                        }
+                        h3 {
+                            color: #333;
+                            font-size: 13pt;
+                            margin-bottom: 10px;
+                            margin-top: 20px;
+                        }
+                        .info-box {
+                            margin-bottom: 20px;
+                            line-height: 1.8;
+                            background-color: #f8f9fa;
+                            padding: 15px;
+                            border-radius: 5px;
+                            border: 1px solid #ddd;
+                        }
+                        .info-box p {
+                            margin: 5px 0;
+                        }
+                        .content-item {
+                            margin-bottom: 30px;
+                            border: 1px solid #ddd;
+                            padding: 15px;
+                            border-radius: 5px;
+                            background-color: #fff;
+                        }
+                        .screenshot {
+                            margin: 15px 0;
+                            page-break-inside: avoid;
+                        }
+                        .screenshot img {
+                            max-width: 100%;
+                            height: auto;
+                            margin: 10px 0;
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                        }
+                        .screenshot-description {
+                            font-style: italic;
+                            color: #555;
+                            margin: 5px 0;
+                        }
+                        .screenshot-timestamp {
+                            font-size: 9pt;
+                            color: #999;
+                            font-style: italic;
+                            margin: 5px 0;
+                        }
+                        .toolbar {
+                            position: fixed;
+                            top: 10px;
+                            right: 10px;
+                            background: white;
+                            padding: 10px;
+                            border: 2px solid black;
+                            border-radius: 5px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                            z-index: 10001;
+                        }
+                        .toolbar button {
+                            background: black;
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            margin: 0 5px;
+                        }
+                        .toolbar button:hover {
+                            background: #333;
+                        }
+                        @media print {
+                            .toolbar {
+                                display: none;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="toolbar">
+                        <button onclick="window.print()">🖨️ Drukuj/Zapisz PDF</button>
+                        <button onclick="window.close()">✕ Zamknij</button>
+                    </div>
+
+                    <h1>Monitoring strony - ${report.monitoring_date}</h1>
+
+                    <div class="info-box">
+                        <p><strong>Data monitoringu:</strong> ${report.monitoring_date}</p>
+                        <p><strong>Klient:</strong> ${escapeHtmlForPreview(report.klient_nazwa)}</p>
+                        <p><strong>Zakres raportu:</strong> ${escapeHtmlForPreview(report.zakres)}</p>
+                        <p><strong>Okres monitoringu:</strong> ${report.okres_od} do ${report.okres_do}</p>
+                    </div>
+
+                    <h2>Lista zweryfikowanych treści</h2>
+            `;
+
+            // Add report items
+            if (report.items && report.items.length > 0) {
+                report.items.forEach((item, index) => {
+                    html += `
+                        <div class="content-item">
+                            <h3>Element ${index + 1}</h3>
+                            <p><strong>Typ treści:</strong> ${escapeHtmlForPreview(item.typ_tresci)}</p>
+                            ${item.tytul ? `<p><strong>Tytuł:</strong> ${escapeHtmlForPreview(item.tytul)}</p>` : ''}
+                            <p><strong>Adres URL:</strong></p>
+                            <p style="margin-left: 20px; word-wrap: break-word;">${escapeHtmlForPreview(item.url)}</p>
+
+                            <p><strong>Zidentyfikowane problemy:</strong></p>
+                            <div style="margin-left: 20px;">${item.problemy || ''}</div>
+
+                            <p><strong>Wprowadzone poprawki:</strong></p>
+                            <div style="margin-left: 20px;">${item.poprawki || ''}</div>
+                    `;
+
+                    // Add screenshots
+                    if (item.screenshots && item.screenshots.length > 0) {
+                        html += `<p><strong>Zdjęcia:</strong></p>`;
+                        item.screenshots.forEach((screenshot, screenshotIndex) => {
+                            html += `
+                                <div class="screenshot">
+                                    ${item.screenshots.length > 1 ? `<p style="font-weight: bold;">Zdjęcie ${screenshotIndex + 1}:</p>` : ''}
+                                    ${screenshot.opis ? `<p class="screenshot-description">${escapeHtmlForPreview(screenshot.opis)}</p>` : ''}
+                                    <img src="${screenshot.image_data}" alt="Zdjęcie ${screenshotIndex + 1}">
+                                    ${screenshot.upload_timestamp ? `<p class="screenshot-timestamp">Dodano: ${new Date(screenshot.upload_timestamp).toLocaleString('pl-PL')}</p>` : ''}
+                                </div>
+                            `;
+                        });
+                    }
+
+                    html += `</div>`;
+                });
+            } else {
+                html += `<p style="text-align: center; color: #999; padding: 40px;">Brak elementów w raporcie</p>`;
+            }
+
+            html += `
+                </body>
+                </html>
+            `;
+
+            return html;
+        }
+
         function editReport(reportId) {
             window.location.href = `index.html?edit=${reportId}`;
         }
