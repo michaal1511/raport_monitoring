@@ -1,121 +1,101 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* ==========================================================================
+   Custom styles for Report Generator - GOV.UK Design System Override
+   ========================================================================== */
+
+/* Custom Properties (GOV.UK Colors) */
+:root {
+    --govuk-blue: #1d70b8;
+    --govuk-dark-blue: #003078;
+    --govuk-light-blue: #5694ca;
+    --govuk-red: #d4351c;
+    --govuk-green: #00703c;
+    --govuk-yellow: #ffdd00;
+    --govuk-black: #0b0c0c;
+    --govuk-dark-grey: #505a5f;
+    --govuk-mid-grey: #b1b4b6;
+    --govuk-light-grey: #f3f2f1;
+    --govuk-white: #ffffff;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 20px;
-    color: #333;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 3px solid #667eea;
-}
-
-h1 {
-    color: #667eea;
-    font-size: 2em;
-    margin-bottom: 10px;
-}
-
-h2 {
-    color: #764ba2;
-    font-size: 1.5em;
-    margin-bottom: 20px;
-}
-
-h3 {
-    color: #555;
-    font-size: 1.2em;
-    margin: 0;
-}
-
-.form-section {
-    margin-bottom: 30px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #555;
-}
-
-.form-group input[type="text"],
-.form-group input[type="date"],
-.form-group input[type="url"],
-.form-group select,
-.form-group textarea {
+/* ==========================================================================
+   Modal Styles (Custom component not in GOV.UK)
+   ========================================================================== */
+.govuk-modal {
+    display: flex;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
     width: 100%;
-    padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.govuk-modal__overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.govuk-modal__content {
+    position: relative;
+    background: var(--govuk-white);
+    max-width: 640px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: govuk-modal-slide-in 0.3s ease-out;
+}
+
+.govuk-modal__header {
+    padding: 30px 30px 0;
+    border-left: 5px solid var(--govuk-blue);
+}
+
+.govuk-modal__body {
+    padding: 20px 30px 30px;
+}
+
+@keyframes govuk-modal-slide-in {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* File status messages */
+.file-status {
+    margin-top: 5px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.file-status.success {
+    color: var(--govuk-green);
+}
+
+.file-status.error {
+    color: var(--govuk-red);
+}
+
+/* Code styling */
+.govuk-code {
+    font-family: monospace;
+    background: var(--govuk-light-grey);
+    padding: 2px 6px;
     font-size: 14px;
-    transition: border-color 0.3s;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.form-group input[readonly],
-.form-group textarea[readonly] {
-    background-color: #e9ecef;
-    cursor: not-allowed;
-}
-
-.date-range {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.date-range input {
-    flex: 1;
-}
-
-.date-range span {
-    font-weight: 600;
-    color: #666;
-}
-
-.content-section {
-    margin-bottom: 30px;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
+/* ==========================================================================
+   Content Items (Report entries)
+   ========================================================================== */
 .content-list {
     display: flex;
     flex-direction: column;
@@ -123,15 +103,20 @@ h3 {
 }
 
 .content-item {
-    border: 2px solid #ddd;
-    border-radius: 8px;
+    border: 2px solid var(--govuk-mid-grey);
     padding: 20px;
-    background: #fff;
-    transition: box-shadow 0.3s;
+    background: var(--govuk-white);
+    transition: border-color 0.2s;
 }
 
 .content-item:hover {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-color: var(--govuk-blue);
+}
+
+.content-item:focus-within {
+    border-color: var(--govuk-blue);
+    outline: 3px solid var(--govuk-yellow);
+    outline-offset: 0;
 }
 
 .content-item-header {
@@ -139,8 +124,8 @@ h3 {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--govuk-mid-grey);
 }
 
 .content-item-body {
@@ -149,26 +134,97 @@ h3 {
     gap: 15px;
 }
 
-.btn-add-screenshot {
-    margin-bottom: 15px;
+/* ==========================================================================
+   Title Input Wrapper
+   ========================================================================== */
+.title-input-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
 }
 
+.title-input-wrapper input {
+    flex: 1;
+}
+
+.title-input-wrapper .govuk-button {
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Template Selector
+   ========================================================================== */
+.template-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+}
+
+.template-selector select {
+    flex: 1;
+}
+
+.template-selector .govuk-button {
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Quill Editor Wrapper
+   ========================================================================== */
+.editor-wrapper {
+    background: var(--govuk-white);
+    border: 2px solid var(--govuk-black);
+    transition: border-color 0.2s;
+}
+
+.editor-wrapper:focus-within {
+    outline: 3px solid var(--govuk-yellow);
+    outline-offset: 0;
+    border-color: var(--govuk-black);
+}
+
+.editor-wrapper .ql-toolbar {
+    border: none;
+    border-bottom: 1px solid var(--govuk-mid-grey);
+    background: var(--govuk-light-grey);
+}
+
+.editor-wrapper .ql-container {
+    border: none;
+    font-size: 19px;
+    font-family: "GDS Transport", arial, sans-serif;
+    min-height: 150px;
+}
+
+.editor-wrapper .ql-editor {
+    min-height: 150px;
+    max-height: 300px;
+    overflow-y: auto;
+    line-height: 1.5;
+}
+
+.editor-wrapper .ql-editor.ql-blank::before {
+    font-style: normal;
+    color: var(--govuk-dark-grey);
+}
+
+/* ==========================================================================
+   Screenshots
+   ========================================================================== */
 .screenshots-container {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .screenshot-item {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 2px solid #e0e0e0;
-    position: relative;
+    padding: 20px;
+    background: var(--govuk-light-grey);
+    border-left: 5px solid var(--govuk-blue);
 }
 
 .screenshot-preview {
@@ -176,181 +232,102 @@ h3 {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: white;
-    border-radius: 5px;
+    background: var(--govuk-white);
     padding: 10px;
+    margin-bottom: 15px;
 }
 
 .screenshot-preview img {
     max-width: 100%;
     max-height: 300px;
-    border-radius: 5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--govuk-mid-grey);
 }
 
-.screenshot-description-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+/* ==========================================================================
+   Floating Add Button
+   ========================================================================== */
+.floating-add-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-.screenshot-description-wrapper label {
-    font-weight: 600;
-    font-size: 14px;
-    color: #555;
+.floating-add-btn:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
-.screenshot-description {
-    width: 100%;
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    font-family: inherit;
-    resize: vertical;
-    transition: border-color 0.3s;
-}
-
-.screenshot-description:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.btn-remove-screenshot-item {
-    align-self: flex-end;
-    padding: 6px 12px;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background 0.3s;
-}
-
-.btn-remove-screenshot-item:hover {
-    background: #c82333;
-}
-
-.btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.btn-primary {
-    background: #667eea;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #5568d3;
-}
-
-.btn-success {
-    background: #28a745;
-    color: white;
-}
-
-.btn-success:hover {
-    background: #218838;
-}
-
-.btn-info {
-    background: #17a2b8;
-    color: white;
-    display: inline-block;
-    text-align: center;
-    cursor: pointer;
-}
-
-.btn-info:hover {
-    background: #138496;
-}
-
-.btn-danger {
-    background: #dc3545;
-    color: white;
-}
-
-.btn-danger:hover {
-    background: #c82333;
-}
-
-.btn-remove {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
-}
-
-.btn-remove:hover {
-    background: #c82333;
-}
-
-.actions-section {
-    margin-top: 30px;
+/* ==========================================================================
+   Actions Panel
+   ========================================================================== */
+.actions-panel {
+    background: var(--govuk-light-grey);
     padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
+    border-left: 5px solid var(--govuk-blue);
 }
 
-.action-buttons {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin-bottom: 15px;
+/* ==========================================================================
+   GOV.UK Button Small Variant (Custom)
+   ========================================================================== */
+.govuk-button--small {
+    font-size: 16px;
+    padding: 8px 15px;
+    margin-bottom: 0;
 }
 
-.autosave-info {
-    text-align: center;
-    color: #666;
-    font-size: 14px;
-    font-style: italic;
-}
-
+/* ==========================================================================
+   Autosave Status
+   ========================================================================== */
 #autosave-time {
-    font-weight: 600;
-    color: #28a745;
+    color: var(--govuk-green);
 }
 
-/* Print styles for PDF */
+/* ==========================================================================
+   Text Alignment Utilities
+   ========================================================================== */
+.govuk-\!-text-align-right {
+    text-align: right !important;
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
 @media print {
-    body {
-        background: white;
-        padding: 0;
-    }
-
-    .container {
-        box-shadow: none;
-        max-width: 100%;
-    }
-
-    .actions-section,
+    .govuk-header,
+    .govuk-footer,
+    .floating-add-btn,
+    .actions-panel,
     .btn-remove,
-    .btn-remove-screenshot {
+    .btn-remove-screenshot-item,
+    .btn-fetch-title,
+    .btn-add-screenshot,
+    .template-selector,
+    #update-data-btn {
         display: none !important;
+    }
+
+    .govuk-main-wrapper {
+        padding-top: 0;
     }
 
     .content-item {
         page-break-inside: avoid;
+        border: 1px solid #000;
+    }
+
+    .editor-wrapper {
+        border: none;
+    }
+
+    .editor-wrapper .ql-toolbar {
+        display: none;
     }
 }
 
-/* PDF specific styles */
+/* ==========================================================================
+   PDF Export Styles
+   ========================================================================== */
 .pdf-page {
     position: relative;
     width: 210mm;
@@ -358,7 +335,6 @@ h3 {
     padding: 20mm;
     margin: 0 auto;
     background: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .pdf-watermark {
@@ -367,7 +343,7 @@ h3 {
     top: 50%;
     transform: translateY(-50%) rotate(-90deg);
     font-size: 12px;
-    color: rgba(102, 126, 234, 0.3);
+    color: rgba(29, 112, 184, 0.3);
     font-weight: bold;
     transform-origin: center center;
     white-space: nowrap;
@@ -378,348 +354,94 @@ h3 {
     bottom: 10mm;
     right: 10mm;
     font-size: 10px;
-    color: #666;
+    color: var(--govuk-dark-grey);
 }
 
-/* Modal styles */
-.modal {
-    display: flex;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 10px;
-    padding: 40px;
-    max-width: 600px;
-    width: 90%;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.modal-content h2 {
-    color: #667eea;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-.modal-content > p {
-    text-align: center;
-    color: #666;
-    margin-bottom: 30px;
-}
-
-.config-section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.config-info {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    border-left: 4px solid #667eea;
-}
-
-.config-info p {
-    margin-bottom: 10px;
-    color: #555;
-}
-
-.config-info ul {
-    margin-left: 20px;
-    color: #666;
-}
-
-.config-info ul li {
-    margin: 5px 0;
-}
-
-.config-info code {
-    background: #e9ecef;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: 'Courier New', monospace;
-    color: #764ba2;
-}
-
-.file-status {
-    margin-top: 8px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.file-status.success {
-    color: #28a745;
-}
-
-.file-status.error {
-    color: #dc3545;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 10px;
-}
-
-.modal-actions .btn {
-    flex: 1;
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #5a6268;
-}
-
-.btn-small {
-    padding: 8px 16px;
-    font-size: 14px;
-}
-
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-header h1 {
-    flex: 1;
-}
-
-header #update-data-btn {
-    flex-shrink: 0;
-}
-
-.form-group input[type="file"] {
-    width: 100%;
-    padding: 10px;
-    border: 2px dashed #ddd;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: border-color 0.3s;
-}
-
-.form-group input[type="file"]:hover {
-    border-color: #667eea;
-}
-
-/* Template Selector */
-.template-selector {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 8px;
-    align-items: center;
-}
-
-.template-selector select {
-    flex: 1;
-    padding: 8px 12px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    font-size: 13px;
-    background: white;
-    cursor: pointer;
-    transition: border-color 0.3s;
-}
-
-.template-selector select:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.template-selector select:disabled {
-    background: #f5f5f5;
-    cursor: not-allowed;
-    color: #999;
-}
-
-.btn-insert-template {
-    flex-shrink: 0;
-}
-
-/* Quill Editor Styles */
-.editor-wrapper {
-    background: white;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    transition: border-color 0.3s;
-}
-
-.editor-wrapper:focus-within {
-    border-color: #667eea;
-}
-
-.editor-wrapper .ql-toolbar {
-    border: none;
-    border-bottom: 1px solid #ddd;
-    background: #f8f9fa;
-    border-radius: 5px 5px 0 0;
-}
-
-.editor-wrapper .ql-container {
-    border: none;
-    font-size: 14px;
-    min-height: 120px;
-    font-family: inherit;
-}
-
-.editor-wrapper .ql-editor {
-    min-height: 120px;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.editor-wrapper .ql-editor.ql-blank::before {
-    font-style: italic;
-    color: #999;
-}
-
-/* Floating Add Button */
-.floating-add-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 100;
-    padding: 15px 25px;
-    font-size: 16px;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    border-radius: 50px;
-    animation: pulse 2s infinite;
-}
-
-.floating-add-btn:hover {
-    animation: none;
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-@keyframes pulse {
-    0%, 100% {
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    }
-    50% {
-        box-shadow: 0 4px 25px rgba(102, 126, 234, 0.6);
-    }
-}
-
-/* Title input wrapper */
-.title-input-wrapper {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.title-input-wrapper input {
-    flex: 1;
-    padding: 12px;
-    border: 2px solid #ddd;
-    border-radius: 5px;
-    font-size: 14px;
-    transition: border-color 0.3s;
-}
-
-.title-input-wrapper input:focus {
-    outline: none;
-    border-color: #667eea;
-}
-
-.btn-fetch-title {
-    flex-shrink: 0;
-    white-space: nowrap;
-}
-
-.btn-fetch-title:disabled {
-    opacity: 0.5;
-    cursor: wait;
-}
-
-.btn-fetch-title.loading {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .container {
-        padding: 15px;
-        padding-bottom: 100px; /* Space for floating button */
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+@media (max-width: 640px) {
+    .govuk-modal__content {
+        width: 95%;
+        max-height: 95vh;
     }
 
-    h1 {
-        font-size: 1.5em;
-    }
-
-    .action-buttons {
-        flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-    }
-
-    .section-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-    }
-
-    .floating-add-btn {
-        bottom: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        font-size: 14px;
+    .govuk-modal__header,
+    .govuk-modal__body {
+        padding-left: 15px;
+        padding-right: 15px;
     }
 
     .title-input-wrapper {
         flex-direction: column;
     }
 
-    .title-input-wrapper input {
+    .title-input-wrapper input,
+    .title-input-wrapper .govuk-button {
         width: 100%;
     }
 
-    .btn-fetch-title {
+    .template-selector {
+        flex-direction: column;
+    }
+
+    .template-selector select,
+    .template-selector .govuk-button {
         width: 100%;
     }
+
+    .content-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .floating-add-btn {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .actions-panel .govuk-button-group {
+        flex-direction: column;
+    }
+
+    .actions-panel .govuk-button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* ==========================================================================
+   Header customization
+   ========================================================================== */
+.govuk-header__logotype-text {
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   Form readonly state
+   ========================================================================== */
+.govuk-input[readonly],
+.govuk-textarea[readonly] {
+    background-color: var(--govuk-light-grey);
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Loading state for fetch button
+   ========================================================================== */
+.btn-fetch-title.loading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.btn-fetch-title.loading::after {
+    content: "...";
+    animation: loading-dots 1s infinite;
+}
+
+@keyframes loading-dots {
+    0%, 20% { content: "."; }
+    40% { content: ".."; }
+    60%, 100% { content: "..."; }
 }
