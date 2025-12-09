@@ -32,6 +32,13 @@
  * GET  /api.php?action=get_report&id=X    - Get specific report
  * POST /api.php?action=save_report        - Save/update report
  * POST /api.php?action=delete_report      - Delete report
+ *
+ * Oobee Scans Endpoints (Authenticated):
+ * GET  /api.php?action=get_scans          - Get Oobee scans (filtered by role)
+ * GET  /api.php?action=get_scan&id=X      - Get specific scan
+ * POST /api.php?action=add_scan           - Add new Oobee scan
+ * POST /api.php?action=delete_scan        - Delete scan
+ * GET  /api.php?action=download_scan&id=X - Download scan file
  */
 
 require_once 'config.php';
@@ -158,6 +165,29 @@ switch ($action) {
 
     case 'delete_report':
         deleteReport($pdo);
+        break;
+
+    // ========================================
+    // OOBEE SCANS
+    // ========================================
+    case 'get_scans':
+        getScans($pdo);
+        break;
+
+    case 'get_scan':
+        getScan($pdo);
+        break;
+
+    case 'add_scan':
+        addScan($pdo);
+        break;
+
+    case 'delete_scan':
+        deleteScan($pdo);
+        break;
+
+    case 'download_scan':
+        downloadScan($pdo);
         break;
 
     default:
@@ -693,5 +723,232 @@ function deleteReport($pdo) {
         sendResponse(['success' => true, 'message' => 'Raport usunięty']);
     } catch (Exception $e) {
         sendError('Failed to delete report: ' . $e->getMessage(), 500);
+    }
+}
+
+// ========================================
+// OOBEE SCANS HANDLERS
+// ========================================
+
+/**
+ * Get list of Oobee scans
+ * Auditors see only their own scans, administrators see all scans
+ */
+function getScans($pdo) {
+    try {
+        $user = getCurrentUser();
+
+        // Administrator sees all scans, auditor only their own
+        if (isAdministrator()) {
+            $stmt = $pdo->query("
+                SELECT s.*, k.nazwa as klient_nazwa, u.full_name as audytor_name, u.username
+                FROM oobee_scans s
+                LEFT JOIN klienci k ON s.klient_id = k.id
+                LEFT JOIN users u ON s.user_id = u.id
+                ORDER BY s.created_at DESC
+            ");
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT s.*, k.nazwa as klient_nazwa
+                FROM oobee_scans s
+                LEFT JOIN klienci k ON s.klient_id = k.id
+                WHERE s.user_id = ?
+                ORDER BY s.created_at DESC
+            ");
+            $stmt->execute([$user['id']]);
+        }
+
+        $scans = $stmt->fetchAll();
+
+        sendResponse(['scans' => $scans]);
+    } catch (Exception $e) {
+        sendError('Failed to get scans: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * Get single scan details
+ */
+function getScan($pdo) {
+    try {
+        $user = getCurrentUser();
+        $scanId = $_GET['id'] ?? null;
+
+        if (!$scanId) {
+            sendError('ID skanu jest wymagane', 400);
+        }
+
+        // Get scan with permission check
+        if (isAdministrator()) {
+            $stmt = $pdo->prepare("
+                SELECT s.*, k.nazwa as klient_nazwa, u.full_name as audytor_name, u.username
+                FROM oobee_scans s
+                LEFT JOIN klienci k ON s.klient_id = k.id
+                LEFT JOIN users u ON s.user_id = u.id
+                WHERE s.id = ?
+            ");
+            $stmt->execute([$scanId]);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT s.*, k.nazwa as klient_nazwa
+                FROM oobee_scans s
+                LEFT JOIN klienci k ON s.klient_id = k.id
+                WHERE s.id = ? AND s.user_id = ?
+            ");
+            $stmt->execute([$scanId, $user['id']]);
+        }
+
+        $scan = $stmt->fetch();
+
+        if (!$scan) {
+            sendError('Skan nie znaleziony lub brak uprawnień', 404);
+        }
+
+        sendResponse(['scan' => $scan]);
+    } catch (Exception $e) {
+        sendError('Failed to get scan: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * Add new Oobee scan
+ */
+function addScan($pdo) {
+    try {
+        $user = getCurrentUser();
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        // Validate required fields
+        if (!isset($data['klient_id']) || !isset($data['scan_name']) ||
+            !isset($data['scan_date']) || !isset($data['scan_data'])) {
+            sendError('Klient, nazwa skanu, data i dane są wymagane', 400);
+        }
+
+        // Verify client exists
+        $stmt = $pdo->prepare("SELECT id FROM klienci WHERE id = ?");
+        $stmt->execute([$data['klient_id']]);
+        if (!$stmt->fetch()) {
+            sendError('Klient nie istnieje', 400);
+        }
+
+        // Calculate file size
+        $fileSize = strlen($data['scan_data']);
+
+        // Insert scan
+        $stmt = $pdo->prepare("
+            INSERT INTO oobee_scans (
+                user_id, klient_id, scan_name, scan_date, scan_data,
+                file_name, file_type, file_size, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+
+        $stmt->execute([
+            $user['id'],
+            $data['klient_id'],
+            $data['scan_name'],
+            $data['scan_date'],
+            $data['scan_data'],
+            $data['file_name'] ?? '',
+            $data['file_type'] ?? 'json',
+            $fileSize,
+            $data['notes'] ?? ''
+        ]);
+
+        $scanId = $pdo->lastInsertId();
+
+        sendResponse([
+            'success' => true,
+            'message' => 'Skan dodany pomyślnie',
+            'scan_id' => $scanId
+        ]);
+    } catch (Exception $e) {
+        sendError('Failed to add scan: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * Delete Oobee scan
+ */
+function deleteScan($pdo) {
+    try {
+        $user = getCurrentUser();
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['id'])) {
+            sendError('ID skanu jest wymagane', 400);
+        }
+
+        // Check permissions: administrator can delete all, auditor only their own
+        $stmt = $pdo->prepare("SELECT user_id FROM oobee_scans WHERE id = ?");
+        $stmt->execute([$data['id']]);
+        $scan = $stmt->fetch();
+
+        if (!$scan) {
+            sendError('Skan nie znaleziony', 404);
+        }
+
+        if (!isAdministrator() && $scan['user_id'] != $user['id']) {
+            sendError('Brak uprawnień do usunięcia tego skanu', 403);
+        }
+
+        $stmt = $pdo->prepare("DELETE FROM oobee_scans WHERE id = ?");
+        $stmt->execute([$data['id']]);
+
+        sendResponse(['success' => true, 'message' => 'Skan usunięty']);
+    } catch (Exception $e) {
+        sendError('Failed to delete scan: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * Download scan data (returns raw scan content)
+ */
+function downloadScan($pdo) {
+    try {
+        $user = getCurrentUser();
+        $scanId = $_GET['id'] ?? null;
+
+        if (!$scanId) {
+            sendError('ID skanu jest wymagane', 400);
+        }
+
+        // Get scan with permission check
+        if (isAdministrator()) {
+            $stmt = $pdo->prepare("
+                SELECT scan_data, file_name, file_type
+                FROM oobee_scans
+                WHERE id = ?
+            ");
+            $stmt->execute([$scanId]);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT scan_data, file_name, file_type
+                FROM oobee_scans
+                WHERE id = ? AND user_id = ?
+            ");
+            $stmt->execute([$scanId, $user['id']]);
+        }
+
+        $scan = $stmt->fetch();
+
+        if (!$scan) {
+            sendError('Skan nie znaleziony lub brak uprawnień', 404);
+        }
+
+        // Set appropriate headers for file download
+        $fileName = $scan['file_name'] ?: 'scan_' . $scanId . '.' . $scan['file_type'];
+        $contentType = match($scan['file_type']) {
+            'json' => 'application/json',
+            'html' => 'text/html',
+            'csv' => 'text/csv',
+            default => 'text/plain'
+        };
+
+        header('Content-Type: ' . $contentType);
+        header('Content-Disposition: attachment; filename="' . $fileName . '"');
+        echo $scan['scan_data'];
+        exit;
+    } catch (Exception $e) {
+        sendError('Failed to download scan: ' . $e->getMessage(), 500);
     }
 }
