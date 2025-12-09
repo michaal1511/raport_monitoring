@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widok Klienta - Raporty i Skany</title>
+    <link rel="stylesheet" href="govuk-style.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="govuk-loader-overlay">
+        <div style="text-align: center;">
+            <div class="govuk-loader"></div>
+            <p class="govuk-body govuk-!-margin-bottom-0" style="margin-top: 15px;">Ładowanie...</p>
+        </div>
+    </div>
+
+    <!-- GOV.UK Header -->
+    <header class="govuk-header" role="banner">
+        <div class="govuk-width-container">
+            <div class="govuk-header__container">
+                <div class="govuk-header__logo">
+                    Monitoring Dostępności
+                </div>
+                <div class="govuk-header__content">
+                    <div id="user-info" class="user-info-govuk"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <div class="govuk-nav-bar">
+        <div class="govuk-width-container">
+            <nav class="govuk-nav-bar__content">
+                <a href="index.html" class="govuk-button govuk-button--secondary govuk-button--small">Generator raportów</a>
+                <a href="scans.html" class="govuk-button govuk-button--secondary govuk-button--small">Skany Oobee</a>
+                <button type="button" onclick="logout()" class="govuk-button govuk-button--warning govuk-button--small">Wyloguj</button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="govuk-width-container" style="max-width: 1200px;">
+        <main class="govuk-main-wrapper" id="main-content" role="main">
+
+            <!-- Breadcrumbs -->
+            <nav class="govuk-breadcrumbs govuk-!-margin-bottom-6" aria-label="Breadcrumb">
+                <ol class="govuk-breadcrumbs__list">
+                    <li class="govuk-breadcrumbs__list-item">
+                        <a class="govuk-breadcrumbs__link" href="index.html">Strona główna</a>
+                    </li>
+                    <li class="govuk-breadcrumbs__list-item" aria-current="page">
+                        Widok klienta
+                    </li>
+                </ol>
+            </nav>
+
+            <h1 class="govuk-heading-xl">Widok klienta</h1>
+
+            <!-- Client Selector -->
+            <div class="govuk-panel govuk-!-margin-bottom-6">
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-label--m" for="client-select">
+                        Wybierz klienta
+                    </label>
+                    <select class="govuk-select" id="client-select" onchange="loadClientData()" style="max-width: 400px;">
+                        <option value="">-- Wybierz klienta --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Client Data Section -->
+            <div id="client-data-section" style="display: none;">
+                <h2 class="govuk-heading-l" id="client-name"></h2>
+
+                <!-- Stats -->
+                <div class="govuk-grid-row govuk-!-margin-bottom-6">
+                    <div class="govuk-grid-column-one-half">
+                        <div class="govuk-panel govuk-panel--black" style="text-align: center;">
+                            <div class="govuk-heading-xl govuk-!-margin-bottom-0" id="reports-count" style="color: white;">0</div>
+                            <p class="govuk-body" style="color: white; margin: 0;">Raportów ręcznych</p>
+                        </div>
+                    </div>
+                    <div class="govuk-grid-column-one-half">
+                        <div class="govuk-panel govuk-panel--black" style="text-align: center;">
+                            <div class="govuk-heading-xl govuk-!-margin-bottom-0" id="scans-count" style="color: white;">0</div>
+                            <p class="govuk-body" style="color: white; margin: 0;">Skanów Oobee</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <ul class="govuk-tabs__list">
+                    <li class="govuk-tabs__list-item">
+                        <button type="button" class="govuk-tabs__tab govuk-tabs__tab--selected" onclick="switchTab('reports', this)">Raporty ręczne</button>
+                    </li>
+                    <li class="govuk-tabs__list-item">
+                        <button type="button" class="govuk-tabs__tab" onclick="switchTab('scans', this)">Skany Oobee</button>
+                    </li>
+                </ul>
+
+                <!-- Reports Tab -->
+                <div id="reports-tab" class="govuk-tabs__panel">
+                    <div id="reports-table-container"></div>
+                </div>
+
+                <!-- Scans Tab -->
+                <div id="scans-tab" class="govuk-tabs__panel govuk-tabs__panel--hidden">
+                    <div id="scans-table-container"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const API_URL = 'api.php';
+        let currentUser = null;
+        let klienci = [];
+        let currentKlientId = null;
+        let currentClientData = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuthentication();
+            await loadClients();
+        });
+
+        // Authentication
+        async function checkAuthentication() {
+            try {
+                const response = await fetch(`${API_URL}?action=check_auth`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+                const result = await response.json();
+
+                if (!response.ok || !result.authenticated) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                currentUser = result.user;
+                updateUserInfo();
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        function updateUserInfo() {
+            const userInfoDiv = document.getElementById('user-info');
+            if (currentUser) {
+                const roleName = currentUser.role === 'administrator' ? 'Administrator' : 'Audytor';
+                userInfoDiv.innerHTML = `
+                    <span style="color: white; font-size: 14px;">
+                        <strong>${currentUser.full_name || currentUser.username}</strong>
+                        <br><small>${roleName}</small>
+                    </span>
+                `;
+            }
+        }
+
+        async function logout() {
+            try {
+                await apiCall('logout', {}, 'POST');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Load clients
+        async function loadClients() {
+            try {
+                const config = await apiCall('get_config');
+                klienci = config.klienci || [];
+
+                const clientSelect = document.getElementById('client-select');
+                clientSelect.innerHTML = '<option value="">-- Wybierz klienta --</option>';
+                klienci.forEach(klient => {
+                    const option = document.createElement('option');
+                    option.value = klient.id;
+                    option.textContent = klient.nazwa;
+                    clientSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load clients:', error);
+            }
+        }
+
+        // Load client data
+        async function loadClientData() {
+            const select = document.getElementById('client-select');
+            currentKlientId = select.value;
+
+            if (!currentKlientId) {
+                document.getElementById('client-data-section').style.display = 'none';
+                return;
+            }
+
+            showLoading();
+            try {
+                const result = await apiCall(`get_client_data&klient_id=${currentKlientId}`);
+                currentClientData = result;
+
+                // Update client name
+                document.getElementById('client-name').textContent = result.klient.nazwa;
+
+                // Update stats
+                document.getElementById('reports-count').textContent = result.reports.length;
+                document.getElementById('scans-count').textContent = result.scans.length;
+
+                // Display data
+                displayReports(result.reports);
+                displayScans(result.scans);
+
+                // Show section
+                document.getElementById('client-data-section').style.display = 'block';
+            } catch (error) {
+                console.error('Failed to load client data:', error);
+                alert('Nie udało się załadować danych klienta');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tab, button) {
+            // Update tab buttons
+            document.querySelectorAll('.govuk-tabs__tab').forEach(t => t.classList.remove('govuk-tabs__tab--selected'));
+            button.classList.add('govuk-tabs__tab--selected');
+
+            // Update tab content
+            document.querySelectorAll('.govuk-tabs__panel').forEach(c => c.classList.add('govuk-tabs__panel--hidden'));
+            document.getElementById(`${tab}-tab`).classList.remove('govuk-tabs__panel--hidden');
+        }
+
+        // Display reports
+        function displayReports(reports) {
+            const container = document.getElementById('reports-table-container');
+
+            if (reports.length === 0) {
+                container.innerHTML = `
+                    <div class="govuk-inset-text" style="text-align: center;">
+                        <h3 class="govuk-heading-m">Brak raportów ręcznych</h3>
+                        <p class="govuk-body">Nie ma jeszcze żadnych raportów dla tego klienta.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="govuk-table">
+                    <thead class="govuk-table__head">
+                        <tr class="govuk-table__row">
+                            <th class="govuk-table__header">Data monitoringu</th>
+                            <th class="govuk-table__header">Zakres</th>
+                            <th class="govuk-table__header">Okres</th>
+                            ${currentUser.role === 'administrator' ? '<th class="govuk-table__header">Audytor</th>' : ''}
+                            <th class="govuk-table__header">Data utworzenia</th>
+                            <th class="govuk-table__header">Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody class="govuk-table__body">
+            `;
+
+            reports.forEach(report => {
+                const monitoringDate = new Date(report.monitoring_date).toLocaleDateString('pl-PL');
+                const createdDate = new Date(report.created_at).toLocaleDateString('pl-PL');
+                const okresOd = new Date(report.okres_od).toLocaleDateString('pl-PL');
+                const okresDo = new Date(report.okres_do).toLocaleDateString('pl-PL');
+
+                html += `
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell"><strong>${monitoringDate}</strong></td>
+                        <td class="govuk-table__cell">${escapeHtml(report.zakres.substring(0, 50))}${report.zakres.length > 50 ? '...' : ''}</td>
+                        <td class="govuk-table__cell">${okresOd} - ${okresDo}</td>
+                        ${currentUser.role === 'administrator' ? `<td class="govuk-table__cell">${escapeHtml(report.audytor_name || report.username)}</td>` : ''}
+                        <td class="govuk-table__cell">${createdDate}</td>
+                        <td class="govuk-table__cell">
+                            <button onclick="previewReport(${report.id})" class="govuk-button govuk-button--small govuk-!-margin-bottom-0" title="Podgląd">
+                                Podgląd
+                            </button>
+                            <button onclick="editReport(${report.id})" class="govuk-button govuk-button--secondary govuk-button--small govuk-!-margin-bottom-0" title="Edytuj">
+                                Edytuj
+                            </button>
+                            <button onclick="deleteReport(${report.id})" class="govuk-button govuk-button--warning govuk-button--small govuk-!-margin-bottom-0" title="Usuń">
+                                Usuń
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Display scans
+        function displayScans(scans) {
+            const container = document.getElementById('scans-table-container');
+
+            if (scans.length === 0) {
+                container.innerHTML = `
+                    <div class="govuk-inset-text" style="text-align: center;">
+                        <h3 class="govuk-heading-m">Brak skanów Oobee</h3>
+                        <p class="govuk-body">Nie ma jeszcze żadnych skanów Oobee dla tego klienta.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="govuk-table">
+                    <thead class="govuk-table__head">
+                        <tr class="govuk-table__row">
+                            <th class="govuk-table__header">Nazwa skanu</th>
+                            <th class="govuk-table__header">Data skanu</th>
+                            ${currentUser.role === 'administrator' ? '<th class="govuk-table__header">Audytor</th>' : ''}
+                            <th class="govuk-table__header">Typ</th>
+                            <th class="govuk-table__header">Rozmiar</th>
+                            <th class="govuk-table__header">Data dodania</th>
+                            <th class="govuk-table__header">Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody class="govuk-table__body">
+            `;
+
+            scans.forEach(scan => {
+                const scanDate = new Date(scan.scan_date).toLocaleDateString('pl-PL');
+                const createdDate = new Date(scan.created_at).toLocaleDateString('pl-PL');
+                const fileSize = formatFileSize(scan.file_size);
+
+                html += `
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell"><strong>${escapeHtml(scan.scan_name)}</strong></td>
+                        <td class="govuk-table__cell">${scanDate}</td>
+                        ${currentUser.role === 'administrator' ? `<td class="govuk-table__cell">${escapeHtml(scan.audytor_name || scan.username)}</td>` : ''}
+                        <td class="govuk-table__cell"><span class="govuk-tag govuk-tag--grey">${scan.file_type.toUpperCase()}</span></td>
+                        <td class="govuk-table__cell">${fileSize}</td>
+                        <td class="govuk-table__cell">${createdDate}</td>
+                        <td class="govuk-table__cell">
+                            ${scan.file_type === 'html' ? `
+                                <button onclick="previewScan(${scan.id})" class="govuk-button govuk-button--small govuk-!-margin-bottom-0" title="Podgląd">
+                                    Podgląd
+                                </button>
+                            ` : ''}
+                            <button onclick="downloadScan(${scan.id})" class="govuk-button govuk-button--secondary govuk-button--small govuk-!-margin-bottom-0" title="Pobierz">
+                                Pobierz
+                            </button>
+                            <button onclick="deleteScan(${scan.id})" class="govuk-button govuk-button--warning govuk-button--small govuk-!-margin-bottom-0" title="Usuń">
+                                Usuń
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Report actions
+        async function previewReport(reportId) {
+            showLoading();
+            try {
+                const result = await apiCall(`get_report&id=${reportId}`);
+                const report = result.report;
+
+                // Generate PDF-like preview
+                const htmlContent = generateReportPreview(report);
+
+                // Open in new window
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                if (!printWindow) {
+                    alert('Zablokowano wyskakujące okno! Pozwól na wyskakujące okna dla tej strony.');
+                    return;
+                }
+
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+            } catch (error) {
+                console.error('Failed to preview report:', error);
+                alert('Nie udało się załadować podglądu raportu');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function generateReportPreview(report) {
+            function escapeHtmlForPreview(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            let html = `
+                <!DOCTYPE html>
+                <html lang="pl">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Podgląd raportu</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; font-size: 11pt; padding: 20px; max-width: 800px; margin: 0 auto; }
+                        h1 { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; }
+                        h2 { border-bottom: 2px solid black; padding-bottom: 5px; margin-top: 30px; }
+                        .info-box { background: #f3f2f1; padding: 15px; border-left: 10px solid #b1b4b6; margin-bottom: 20px; }
+                        .content-item { border: 1px solid #b1b4b6; padding: 15px; margin-bottom: 20px; }
+                        .toolbar { position: fixed; top: 10px; right: 10px; background: white; padding: 10px; border: 2px solid black; }
+                        .toolbar button { background: black; color: white; border: none; padding: 10px 20px; cursor: pointer; margin: 0 5px; }
+                        .screenshot img { max-width: 100%; margin: 10px 0; border: 1px solid #b1b4b6; }
+                        @media print { .toolbar { display: none; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="toolbar">
+                        <button onclick="window.print()">Drukuj/Zapisz PDF</button>
+                        <button onclick="window.close()">Zamknij</button>
+                    </div>
+                    <h1>Monitoring strony - ${report.monitoring_date}</h1>
+                    <div class="info-box">
+                        <p><strong>Data monitoringu:</strong> ${report.monitoring_date}</p>
+                        <p><strong>Klient:</strong> ${escapeHtmlForPreview(report.klient_nazwa)}</p>
+                        <p><strong>Zakres:</strong> ${escapeHtmlForPreview(report.zakres)}</p>
+                        <p><strong>Okres:</strong> ${report.okres_od} do ${report.okres_do}</p>
+                    </div>
+                    <h2>Lista zweryfikowanych treści</h2>
+            `;
+
+            if (report.items && report.items.length > 0) {
+                report.items.forEach((item, index) => {
+                    html += `
+                        <div class="content-item">
+                            <h3>Element ${index + 1}</h3>
+                            <p><strong>Typ:</strong> ${escapeHtmlForPreview(item.typ_tresci)}</p>
+                            ${item.tytul ? `<p><strong>Tytuł:</strong> ${escapeHtmlForPreview(item.tytul)}</p>` : ''}
+                            <p><strong>URL:</strong> ${escapeHtmlForPreview(item.url)}</p>
+                            <p><strong>Problemy:</strong></p><div>${item.problemy || ''}</div>
+                            <p><strong>Poprawki:</strong></p><div>${item.poprawki || ''}</div>
+                    `;
+                    if (item.screenshots && item.screenshots.length > 0) {
+                        item.screenshots.forEach((s, i) => {
+                            html += `<div class="screenshot">${s.opis ? `<p><em>${escapeHtmlForPreview(s.opis)}</em></p>` : ''}<img src="${s.image_data}" alt="Zdjęcie ${i+1}"></div>`;
+                        });
+                    }
+                    html += `</div>`;
+                });
+            }
+
+            html += `</body></html>`;
+            return html;
+        }
+
+        function editReport(reportId) {
+            window.location.href = `index.html?edit=${reportId}`;
+        }
+
+        async function deleteReport(reportId) {
+            if (!confirm('Czy na pewno chcesz usunąć ten raport?')) return;
+
+            showLoading();
+            try {
+                await apiCall('delete_report', { id: reportId }, 'POST');
+                await loadClientData();
+                alert('Raport został usunięty');
+            } catch (error) {
+                console.error('Failed to delete report:', error);
+                alert('Nie udało się usunąć raportu: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Scan actions
+        function previewScan(scanId) {
+            window.open(`${API_URL}?action=view_scan&id=${scanId}`, '_blank');
+        }
+
+        function downloadScan(scanId) {
+            window.open(`${API_URL}?action=download_scan&id=${scanId}`, '_blank');
+        }
+
+        async function deleteScan(scanId) {
+            if (!confirm('Czy na pewno chcesz usunąć ten skan?')) return;
+
+            showLoading();
+            try {
+                await apiCall('delete_scan', { id: scanId }, 'POST');
+                await loadClientData();
+                alert('Skan został usunięty');
+            } catch (error) {
+                console.error('Failed to delete scan:', error);
+                alert('Nie udało się usunąć skanu: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Utility functions
+        async function apiCall(action, data = {}, method = 'GET') {
+            const url = `${API_URL}?action=${action}`;
+            const options = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' };
+            if (method === 'POST' && Object.keys(data).length > 0) options.body = JSON.stringify(data);
+
+            const response = await fetch(url, options);
+            const result = await response.json();
+
+            if (!response.ok || (result.hasOwnProperty('success') && !result.success)) {
+                throw new Error(result.error || 'API call failed');
+            }
+            return result;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.add('govuk-loader-overlay--active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('govuk-loader-overlay--active');
+        }
+    </script>
+</body>
+</html>

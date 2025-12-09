@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zarządzanie Skanami Oobee</title>
+    <link rel="stylesheet" href="govuk-style.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="govuk-loader-overlay">
+        <div style="text-align: center;">
+            <div class="govuk-loader"></div>
+            <p class="govuk-body govuk-!-margin-bottom-0" style="margin-top: 15px;">Ładowanie...</p>
+        </div>
+    </div>
+
+    <!-- GOV.UK Header -->
+    <header class="govuk-header" role="banner">
+        <div class="govuk-width-container">
+            <div class="govuk-header__container">
+                <div class="govuk-header__logo">
+                    Monitoring Dostępności
+                </div>
+                <div class="govuk-header__content">
+                    <div id="user-info" class="user-info-govuk"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <div class="govuk-nav-bar">
+        <div class="govuk-width-container">
+            <nav class="govuk-nav-bar__content">
+                <a href="index.html" class="govuk-button govuk-button--secondary govuk-button--small">Generator raportów</a>
+                <a href="client-view.html" class="govuk-button govuk-button--secondary govuk-button--small">Widok klienta</a>
+                <button type="button" onclick="logout()" class="govuk-button govuk-button--warning govuk-button--small">Wyloguj</button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="govuk-width-container" style="max-width: 1200px;">
+        <main class="govuk-main-wrapper" id="main-content" role="main">
+
+            <!-- Breadcrumbs -->
+            <nav class="govuk-breadcrumbs govuk-!-margin-bottom-6" aria-label="Breadcrumb">
+                <ol class="govuk-breadcrumbs__list">
+                    <li class="govuk-breadcrumbs__list-item">
+                        <a class="govuk-breadcrumbs__link" href="index.html">Strona główna</a>
+                    </li>
+                    <li class="govuk-breadcrumbs__list-item" aria-current="page">
+                        Skany Oobee
+                    </li>
+                </ol>
+            </nav>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h1 class="govuk-heading-xl govuk-!-margin-bottom-0">Skany Oobee</h1>
+                <button type="button" onclick="openAddScanModal()" class="govuk-button">
+                    + Dodaj skan
+                </button>
+            </div>
+
+            <!-- Scans Table -->
+            <div id="scans-table-container">
+                <!-- Table will be inserted here -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Add Scan Modal -->
+    <div id="add-scan-modal" class="govuk-modal" style="display: none;">
+        <div class="govuk-modal__overlay"></div>
+        <div class="govuk-modal__content govuk-modal__content--wide">
+            <h2 class="govuk-heading-l">Dodaj nowy skan Oobee</h2>
+
+            <form id="add-scan-form" onsubmit="handleAddScan(event)">
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="scan-klient">Klient</label>
+                    <select class="govuk-select" id="scan-klient" required style="max-width: 400px;">
+                        <option value="">Wybierz klienta...</option>
+                    </select>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="scan-name">Nazwa skanu</label>
+                    <span class="govuk-hint">Opisowa nazwa skanu, która pomoże go zidentyfikować</span>
+                    <input class="govuk-input" type="text" id="scan-name" placeholder="np. Homepage Audit - December 2023" required>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="scan-date">Data wykonania skanu</label>
+                    <input class="govuk-input" type="date" id="scan-date" required style="max-width: 200px;">
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label">Sposób dodania danych</label>
+                    <div class="govuk-button-group govuk-!-margin-bottom-4">
+                        <button type="button" class="govuk-button upload-method-btn" data-method="file" onclick="switchUploadMethod('file')">
+                            Upload pliku
+                        </button>
+                        <button type="button" class="govuk-button govuk-button--secondary upload-method-btn" data-method="paste" onclick="switchUploadMethod('paste')">
+                            Wklej dane
+                        </button>
+                    </div>
+                </div>
+
+                <div id="upload-file-section" class="upload-section">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="scan-file">Wybierz plik</label>
+                        <span class="govuk-hint">Obsługiwane formaty: JSON, HTML, CSV, TXT</span>
+                        <input class="govuk-file-upload" type="file" id="scan-file" accept=".json,.html,.csv,.txt">
+                    </div>
+                </div>
+
+                <div id="upload-paste-section" class="upload-section" style="display: none;">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="scan-data">Wklej dane skanu</label>
+                        <textarea class="govuk-textarea" id="scan-data" rows="10" placeholder="Wklej tutaj zawartość skanu (JSON, HTML, CSV lub text)" style="font-family: monospace; font-size: 12px;"></textarea>
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="scan-type">Typ danych</label>
+                        <select class="govuk-select" id="scan-type" style="max-width: 200px;">
+                            <option value="json">JSON</option>
+                            <option value="html">HTML</option>
+                            <option value="csv">CSV</option>
+                            <option value="txt">Text</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="scan-notes">Notatki (opcjonalnie)</label>
+                    <textarea class="govuk-textarea" id="scan-notes" rows="3" placeholder="Dodatkowe uwagi lub notatki dotyczące skanu"></textarea>
+                </div>
+
+                <div class="govuk-button-group govuk-!-margin-top-6">
+                    <button type="submit" class="govuk-button">Zapisz skan</button>
+                    <button type="button" onclick="closeAddScanModal()" class="govuk-button govuk-button--secondary">Anuluj</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'api.php';
+        let currentUser = null;
+        let klienci = [];
+        let currentUploadMethod = 'file';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuthentication();
+            await loadConfiguration();
+            await loadScans();
+            setTodayDate();
+        });
+
+        // Authentication
+        async function checkAuthentication() {
+            try {
+                const response = await fetch(`${API_URL}?action=check_auth`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+                const result = await response.json();
+
+                if (!response.ok || !result.authenticated) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                currentUser = result.user;
+                updateUserInfo();
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        function updateUserInfo() {
+            const userInfoDiv = document.getElementById('user-info');
+            if (currentUser) {
+                const roleName = currentUser.role === 'administrator' ? 'Administrator' : 'Audytor';
+                userInfoDiv.innerHTML = `
+                    <span style="color: white; font-size: 14px;">
+                        <strong>${currentUser.full_name || currentUser.username}</strong>
+                        <br><small>${roleName}</small>
+                    </span>
+                `;
+            }
+        }
+
+        async function logout() {
+            try {
+                await apiCall('logout', {}, 'POST');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Load configuration (clients)
+        async function loadConfiguration() {
+            try {
+                const config = await apiCall('get_config');
+                klienci = config.klienci || [];
+
+                const klientSelect = document.getElementById('scan-klient');
+                klientSelect.innerHTML = '<option value="">Wybierz klienta...</option>';
+                klienci.forEach(klient => {
+                    const option = document.createElement('option');
+                    option.value = klient.id;
+                    option.textContent = klient.nazwa;
+                    klientSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
+            }
+        }
+
+        // Load scans
+        async function loadScans() {
+            showLoading();
+            try {
+                const result = await apiCall('get_scans');
+                displayScans(result.scans || []);
+            } catch (error) {
+                console.error('Failed to load scans:', error);
+                alert('Nie udało się załadować skanów');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Display scans table
+        function displayScans(scans) {
+            const container = document.getElementById('scans-table-container');
+
+            if (scans.length === 0) {
+                container.innerHTML = `
+                    <div class="govuk-inset-text" style="text-align: center; padding: 40px;">
+                        <h3 class="govuk-heading-m">Brak skanów</h3>
+                        <p class="govuk-body">Nie masz jeszcze żadnych skanów Oobee. Kliknij "Dodaj skan" aby dodać pierwszy.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="govuk-table">
+                    <thead class="govuk-table__head">
+                        <tr class="govuk-table__row">
+                            <th class="govuk-table__header">Nazwa skanu</th>
+                            <th class="govuk-table__header">Klient</th>
+                            <th class="govuk-table__header">Data skanu</th>
+                            ${currentUser.role === 'administrator' ? '<th class="govuk-table__header">Audytor</th>' : ''}
+                            <th class="govuk-table__header">Typ</th>
+                            <th class="govuk-table__header">Rozmiar</th>
+                            <th class="govuk-table__header">Data dodania</th>
+                            <th class="govuk-table__header">Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody class="govuk-table__body">
+            `;
+
+            scans.forEach(scan => {
+                const scanDate = new Date(scan.scan_date).toLocaleDateString('pl-PL');
+                const createdDate = new Date(scan.created_at).toLocaleDateString('pl-PL');
+                const fileSize = formatFileSize(scan.file_size);
+
+                html += `
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell"><strong>${escapeHtml(scan.scan_name)}</strong></td>
+                        <td class="govuk-table__cell">${escapeHtml(scan.klient_nazwa)}</td>
+                        <td class="govuk-table__cell">${scanDate}</td>
+                        ${currentUser.role === 'administrator' ? `<td class="govuk-table__cell">${escapeHtml(scan.audytor_name || scan.username)}</td>` : ''}
+                        <td class="govuk-table__cell"><span class="govuk-tag govuk-tag--grey">${scan.file_type.toUpperCase()}</span></td>
+                        <td class="govuk-table__cell">${fileSize}</td>
+                        <td class="govuk-table__cell">${createdDate}</td>
+                        <td class="govuk-table__cell">
+                            ${scan.file_type === 'html' ? `
+                                <button onclick="previewScan(${scan.id})" class="govuk-button govuk-button--small govuk-!-margin-bottom-0" title="Podgląd">
+                                    Podgląd
+                                </button>
+                            ` : ''}
+                            <button onclick="downloadScan(${scan.id})" class="govuk-button govuk-button--secondary govuk-button--small govuk-!-margin-bottom-0" title="Pobierz">
+                                Pobierz
+                            </button>
+                            <button onclick="deleteScan(${scan.id})" class="govuk-button govuk-button--warning govuk-button--small govuk-!-margin-bottom-0" title="Usuń">
+                                Usuń
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Modal management
+        function openAddScanModal() {
+            document.getElementById('add-scan-modal').style.display = 'flex';
+            document.getElementById('add-scan-form').reset();
+            setTodayDate();
+            switchUploadMethod('file');
+        }
+
+        function closeAddScanModal() {
+            document.getElementById('add-scan-modal').style.display = 'none';
+        }
+
+        function switchUploadMethod(method) {
+            currentUploadMethod = method;
+
+            // Update button states
+            document.querySelectorAll('.upload-method-btn').forEach(btn => {
+                if (btn.dataset.method === method) {
+                    btn.classList.remove('govuk-button--secondary');
+                } else {
+                    btn.classList.add('govuk-button--secondary');
+                }
+            });
+
+            // Show/hide sections
+            document.getElementById('upload-file-section').style.display = method === 'file' ? 'block' : 'none';
+            document.getElementById('upload-paste-section').style.display = method === 'paste' ? 'block' : 'none';
+        }
+
+        // Handle add scan form submission
+        async function handleAddScan(event) {
+            event.preventDefault();
+
+            const klientId = document.getElementById('scan-klient').value;
+            const scanName = document.getElementById('scan-name').value;
+            const scanDate = document.getElementById('scan-date').value;
+            const notes = document.getElementById('scan-notes').value;
+
+            let scanData = '';
+            let fileName = '';
+            let fileType = '';
+
+            if (currentUploadMethod === 'file') {
+                const fileInput = document.getElementById('scan-file');
+                if (!fileInput.files[0]) {
+                    alert('Proszę wybrać plik');
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                fileName = file.name;
+                fileType = file.name.split('.').pop().toLowerCase();
+
+                try {
+                    scanData = await readFile(file);
+                } catch (error) {
+                    alert('Błąd podczas wczytywania pliku: ' + error.message);
+                    return;
+                }
+            } else {
+                scanData = document.getElementById('scan-data').value;
+                if (!scanData.trim()) {
+                    alert('Proszę wkleić dane skanu');
+                    return;
+                }
+                fileType = document.getElementById('scan-type').value;
+                fileName = `${scanName}.${fileType}`;
+            }
+
+            showLoading();
+            try {
+                await apiCall('add_scan', {
+                    klient_id: parseInt(klientId),
+                    scan_name: scanName,
+                    scan_date: scanDate,
+                    scan_data: scanData,
+                    file_name: fileName,
+                    file_type: fileType,
+                    notes: notes
+                }, 'POST');
+
+                closeAddScanModal();
+                await loadScans();
+                alert('Skan został dodany pomyślnie!');
+            } catch (error) {
+                console.error('Failed to add scan:', error);
+                alert('Nie udało się dodać skanu: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Preview scan (for HTML files)
+        function previewScan(scanId) {
+            window.open(`${API_URL}?action=view_scan&id=${scanId}`, '_blank');
+        }
+
+        // Download scan
+        function downloadScan(scanId) {
+            window.open(`${API_URL}?action=download_scan&id=${scanId}`, '_blank');
+        }
+
+        // Delete scan
+        async function deleteScan(scanId) {
+            if (!confirm('Czy na pewno chcesz usunąć ten skan?')) return;
+
+            showLoading();
+            try {
+                await apiCall('delete_scan', { id: scanId }, 'POST');
+                await loadScans();
+                alert('Skan został usunięty');
+            } catch (error) {
+                console.error('Failed to delete scan:', error);
+                alert('Nie udało się usunąć skanu: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Utility functions
+        async function apiCall(action, data = {}, method = 'GET') {
+            const url = `${API_URL}?action=${action}`;
+            const options = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' };
+            if (method === 'POST' && Object.keys(data).length > 0) options.body = JSON.stringify(data);
+
+            const response = await fetch(url, options);
+            const result = await response.json();
+
+            if (!response.ok || (result.hasOwnProperty('success') && !result.success)) {
+                throw new Error(result.error || 'API call failed');
+            }
+            return result;
+        }
+
+        function readFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsText(file);
+            });
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('scan-date').value = today;
+        }
+
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.add('govuk-loader-overlay--active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('govuk-loader-overlay--active');
+        }
+    </script>
+</body>
+</html>

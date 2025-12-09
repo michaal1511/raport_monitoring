@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaloguj się - System Monitoringu Dostępności</title>
+    <link rel="stylesheet" href="govuk-style.css">
+</head>
+<body>
+    <!-- GOV.UK Header -->
+    <header class="govuk-header" role="banner">
+        <div class="govuk-width-container">
+            <div class="govuk-header__container">
+                <div class="govuk-header__logo">
+                    Monitoring Dostępności
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <div class="govuk-width-container">
+        <main class="govuk-main-wrapper" id="main-content" role="main">
+
+            <div style="max-width: 500px; margin: 60px auto;">
+
+                <h1 class="govuk-heading-xl">
+                    Zaloguj się
+                </h1>
+
+                <!-- Error message container -->
+                <div id="error-container" style="display: none;">
+                    <div class="govuk-error-summary" role="alert" aria-labelledby="error-summary-title" tabindex="-1">
+                        <h2 class="govuk-error-summary__title" id="error-summary-title">
+                            Wystąpił problem
+                        </h2>
+                        <div class="govuk-error-summary__body">
+                            <p id="error-message"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="login-form" novalidate>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="username">
+                            Nazwa użytkownika
+                        </label>
+                        <input class="govuk-input" id="username" name="username" type="text" autocomplete="username" required>
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="password">
+                            Hasło
+                        </label>
+                        <input class="govuk-input" id="password" name="password" type="password" autocomplete="current-password" required>
+                    </div>
+
+                    <button type="submit" class="govuk-button" data-module="govuk-button">
+                        Zaloguj się
+                    </button>
+
+                </form>
+
+                <!-- Loading spinner -->
+                <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+                    <div class="govuk-loader" style="margin: 0 auto;"></div>
+                    <p>Trwa logowanie...</p>
+                </div>
+
+                <!-- Default test accounts -->
+                <div class="govuk-inset-text" style="margin-top: 40px;">
+                    <h2 class="govuk-heading-s">Testowe konta</h2>
+                    <p class="govuk-body govuk-!-margin-bottom-2">
+                        <strong>Administrator:</strong><br>
+                        Login: <code>admin</code> / Hasło: <code>admin123</code>
+                    </p>
+                    <p class="govuk-body govuk-!-margin-bottom-0">
+                        <strong>Audytor:</strong><br>
+                        Login: <code>audytor1</code> / Hasło: <code>audytor123</code>
+                    </p>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const API_URL = 'api.php';
+
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorContainer = document.getElementById('error-container');
+            const errorMessage = document.getElementById('error-message');
+            const loadingDiv = document.getElementById('loading');
+
+            // Hide previous errors
+            errorContainer.style.display = 'none';
+
+            // Show loading
+            loadingDiv.style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_URL}?action=login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Redirect to main app
+                    window.location.href = 'index.html';
+                } else {
+                    // Show error
+                    errorMessage.textContent = result.error || 'Błąd logowania';
+                    errorContainer.style.display = 'block';
+                    loadingDiv.style.display = 'none';
+
+                    // Scroll to error
+                    errorContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Błąd połączenia z serwerem. Spróbuj ponownie.';
+                errorContainer.style.display = 'block';
+                loadingDiv.style.display = 'none';
+
+                console.error('Login error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

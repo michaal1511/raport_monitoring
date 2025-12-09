@@ -1,152 +1,81 @@
 <!DOCTYPE html>
-<html lang="pl" class="govuk-template">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Dostępności Cyfrowej - Generator Raportów</title>
-    <!-- GOV.UK Frontend CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/govuk-frontend@5.4.0/dist/govuk/govuk-frontend.min.css">
+    <link rel="stylesheet" href="govuk-style.css">
     <!-- Quill Editor -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <!-- Custom overrides -->
-    <link rel="stylesheet" href="style.css">
 </head>
-<body class="govuk-template__body js-enabled">
-    <script>document.body.className += ' js-enabled' + ('noModule' in HTMLScriptElement.prototype ? ' govuk-frontend-supported' : '');</script>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="govuk-loader-overlay">
+        <div style="text-align: center;">
+            <div class="govuk-loader"></div>
+            <p class="govuk-body govuk-!-margin-bottom-0" style="margin-top: 15px;">Ładowanie...</p>
+        </div>
+    </div>
 
-    <!-- Skip Link -->
-    <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Przejdź do głównej treści</a>
-
-    <!-- Header -->
-    <header class="govuk-header" role="banner" data-module="govuk-header">
-        <div class="govuk-header__container govuk-width-container">
-            <div class="govuk-header__logo">
-                <a href="/" class="govuk-header__link govuk-header__link--homepage">
-                    <span class="govuk-header__logotype">
-                        <span class="govuk-header__logotype-text">Monitoring Dostępności</span>
-                    </span>
-                </a>
-            </div>
-            <div class="govuk-header__content">
-                <a href="/" class="govuk-header__link govuk-header__service-name">
-                    Generator Raportów
-                </a>
+    <!-- GOV.UK Header -->
+    <header class="govuk-header" role="banner">
+        <div class="govuk-width-container">
+            <div class="govuk-header__container">
+                <div class="govuk-header__logo">
+                    Monitoring Dostępności
+                </div>
+                <div class="govuk-header__content">
+                    <div id="user-info" class="user-info-govuk"></div>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Configuration Modal -->
-    <div id="config-modal" class="govuk-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="govuk-modal__overlay"></div>
-        <div class="govuk-modal__content">
-            <div class="govuk-modal__header">
-                <h2 id="modal-title" class="govuk-heading-l">Konfiguracja danych</h2>
-            </div>
-            <div class="govuk-modal__body">
-                <p class="govuk-body">Aby rozpocząć pracę, wczytaj pliki z danymi wykonawcy i klientów. Dane zostaną zapisane w przeglądarce.</p>
-
-                <div class="govuk-form-group">
-                    <label class="govuk-label govuk-label--s" for="wykonawca-file">
-                        Plik wykonawcy (wykonawca.txt)
-                    </label>
-                    <input class="govuk-file-upload" id="wykonawca-file" type="file" accept=".txt" required>
-                    <div class="file-status" id="wykonawca-status"></div>
-                </div>
-
-                <div class="govuk-form-group">
-                    <label class="govuk-label govuk-label--s" for="klienci-file">
-                        Plik klientów (klienci.txt)
-                    </label>
-                    <input class="govuk-file-upload" id="klienci-file" type="file" accept=".txt" required>
-                    <div class="file-status" id="klienci-status"></div>
-                </div>
-
-                <div class="govuk-form-group">
-                    <label class="govuk-label govuk-label--s" for="bledy-file">
-                        Plik szablonów błędów (bledy.txt) - opcjonalny
-                    </label>
-                    <input class="govuk-file-upload" id="bledy-file" type="file" accept=".txt">
-                    <div class="file-status" id="bledy-status"></div>
-                </div>
-
-                <div class="govuk-form-group">
-                    <label class="govuk-label govuk-label--s" for="poprawki-file">
-                        Plik szablonów poprawek (poprawki.txt) - opcjonalny
-                    </label>
-                    <input class="govuk-file-upload" id="poprawki-file" type="file" accept=".txt">
-                    <div class="file-status" id="poprawki-status"></div>
-                </div>
-
-                <div class="govuk-inset-text">
-                    <p class="govuk-body-s"><strong>Format plików:</strong></p>
-                    <ul class="govuk-list govuk-list--bullet govuk-body-s">
-                        <li><code class="govuk-code">wykonawca.txt</code> - jedna linia z nazwą wykonawcy</li>
-                        <li><code class="govuk-code">klienci.txt</code> - każdy klient w nowej linii: Nazwa | Numer umowy</li>
-                        <li><code class="govuk-code">bledy.txt</code> - każdy szablon błędu w nowej linii</li>
-                        <li><code class="govuk-code">poprawki.txt</code> - każdy szablon poprawki w nowej linii</li>
-                    </ul>
-                </div>
-
-                <div class="govuk-button-group">
-                    <button type="button" id="save-config-btn" class="govuk-button" data-module="govuk-button" disabled>
-                        Zapisz i rozpocznij
-                    </button>
-                    <button type="button" id="cancel-config-btn" class="govuk-button govuk-button--secondary" data-module="govuk-button" style="display: none;">
-                        Anuluj
-                    </button>
-                </div>
-            </div>
+    <!-- Navigation Bar -->
+    <div class="govuk-nav-bar">
+        <div class="govuk-width-container">
+            <nav class="govuk-nav-bar__content">
+                <a href="client-view.html" class="govuk-button govuk-button--secondary govuk-button--small">Widok klienta</a>
+                <a href="scans.html" class="govuk-button govuk-button--secondary govuk-button--small">Skany Oobee</a>
+                <button type="button" id="manage-config-btn" class="govuk-button govuk-button--secondary govuk-button--small">Konfiguracja</button>
+                <button type="button" id="logout-btn" class="govuk-button govuk-button--warning govuk-button--small">Wyloguj</button>
+            </nav>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="govuk-width-container" id="main-container" style="display: none;">
+    <div class="govuk-width-container">
         <main class="govuk-main-wrapper" id="main-content" role="main">
 
-            <!-- Page Header -->
-            <div class="govuk-grid-row">
-                <div class="govuk-grid-column-two-thirds">
-                    <h1 class="govuk-heading-xl" id="main-title">
-                        Monitoring strony
-                        <span class="govuk-caption-xl" id="current-date"></span>
-                    </h1>
-                </div>
-                <div class="govuk-grid-column-one-third govuk-!-text-align-right">
-                    <button type="button" id="update-data-btn" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-                        Aktualizuj dane
-                    </button>
-                </div>
-            </div>
+            <h1 class="govuk-heading-xl">
+                Monitoring strony
+                <span class="govuk-caption-xl" id="current-date"></span>
+            </h1>
 
             <form id="report-form">
                 <!-- Basic Information Section -->
-                <section class="govuk-!-margin-bottom-8">
+                <div class="govuk-panel govuk-!-margin-bottom-6">
                     <h2 class="govuk-heading-m">Informacje podstawowe</h2>
 
-                    <div class="govuk-grid-row">
-                        <div class="govuk-grid-column-one-half">
-                            <div class="govuk-form-group">
-                                <label class="govuk-label" for="monitoring-date">
-                                    Data monitoringu
-                                </label>
-                                <input class="govuk-input govuk-input--width-20" id="monitoring-date" type="date" required>
-                            </div>
-                        </div>
-                        <div class="govuk-grid-column-one-half">
-                            <div class="govuk-form-group">
-                                <label class="govuk-label" for="wykonawca">
-                                    Wykonawca
-                                </label>
-                                <input class="govuk-input" id="wykonawca" type="text" readonly>
-                            </div>
-                        </div>
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="monitoring-date">
+                            Data monitoringu
+                        </label>
+                        <input class="govuk-input" id="monitoring-date" type="date" required style="max-width: 200px;">
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="wykonawca">
+                            Wykonawca
+                        </label>
+                        <input class="govuk-input" id="wykonawca" type="text" readonly>
                     </div>
 
                     <div class="govuk-form-group">
                         <label class="govuk-label" for="klient">
                             Klient
                         </label>
-                        <select class="govuk-select govuk-!-width-full" id="klient" required>
+                        <select class="govuk-select" id="klient" required style="max-width: 400px;">
                             <option value="">-- Wybierz klienta --</option>
                         </select>
                     </div>
@@ -158,90 +87,147 @@
                         <textarea class="govuk-textarea" id="zakres" rows="3" readonly></textarea>
                     </div>
 
-                    <fieldset class="govuk-fieldset">
-                        <legend class="govuk-fieldset__legend">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label">
                             Okres monitoringu
-                        </legend>
-                        <div class="govuk-date-input">
-                            <div class="govuk-grid-row">
-                                <div class="govuk-grid-column-one-half">
-                                    <div class="govuk-form-group">
-                                        <label class="govuk-label" for="okres-od">
-                                            Od
-                                        </label>
-                                        <input class="govuk-input govuk-input--width-20" id="okres-od" type="date" required>
-                                    </div>
-                                </div>
-                                <div class="govuk-grid-column-one-half">
-                                    <div class="govuk-form-group">
-                                        <label class="govuk-label" for="okres-do">
-                                            Do
-                                        </label>
-                                        <input class="govuk-input govuk-input--width-20" id="okres-do" type="date" required>
-                                    </div>
-                                </div>
+                        </label>
+                        <div class="govuk-date-range">
+                            <div>
+                                <label class="govuk-label govuk-label--s" for="okres-od">Od</label>
+                                <input class="govuk-input" id="okres-od" type="date" required style="max-width: 180px;">
+                            </div>
+                            <div>
+                                <label class="govuk-label govuk-label--s" for="okres-do">Do</label>
+                                <input class="govuk-input" id="okres-do" type="date" required style="max-width: 180px;">
                             </div>
                         </div>
-                    </fieldset>
-                </section>
+                    </div>
+                </div>
 
                 <!-- Content List Section -->
-                <section class="govuk-!-margin-bottom-8">
-                    <h2 class="govuk-heading-m">Lista zweryfikowanych treści</h2>
-                    <div id="content-list" class="content-list">
-                        <!-- Dynamic content items will be added here -->
-                    </div>
-                </section>
+                <h2 class="govuk-heading-m">Lista zweryfikowanych treści</h2>
+
+                <div id="content-list" class="content-list">
+                    <!-- Dynamic content items will be added here -->
+                </div>
 
                 <!-- Actions Section -->
-                <section class="govuk-!-margin-bottom-8 actions-panel">
+                <div class="govuk-panel govuk-!-margin-top-6">
                     <div class="govuk-button-group">
-                        <button type="button" id="save-json-btn" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-                            Zapisz do JSON
+                        <button type="button" id="save-report-btn" class="govuk-button">
+                            Zapisz raport
                         </button>
-                        <label for="load-json-input" class="govuk-button govuk-button--secondary" data-module="govuk-button">
-                            Wczytaj JSON
-                        </label>
-                        <input type="file" id="load-json-input" accept=".json" style="display: none;">
-                        <button type="button" id="export-pdf-btn" class="govuk-button govuk-button--warning" data-module="govuk-button">
+                        <button type="button" id="load-report-btn" class="govuk-button govuk-button--secondary">
+                            Wczytaj raport
+                        </button>
+                        <button type="button" id="export-pdf-btn" class="govuk-button govuk-button--secondary">
                             Podgląd i drukuj
                         </button>
                     </div>
-                    <p class="govuk-body-s govuk-!-margin-top-3" id="autosave-status">
-                        Automatyczny zapis: <strong id="autosave-time">--:--</strong>
+                    <p class="govuk-body-s govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+                        Status: <strong id="save-status-text">Niezapisany</strong>
                     </p>
-                </section>
+                </div>
             </form>
+
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="govuk-footer" role="contentinfo">
-        <div class="govuk-width-container">
-            <div class="govuk-footer__meta">
-                <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
-                    <span class="govuk-footer__licence-description">
-                        Generator Raportów Monitoringu Dostępności Cyfrowej
-                    </span>
+    <!-- Configuration Modal -->
+    <div id="config-modal" class="govuk-modal" style="display: none;">
+        <div class="govuk-modal__overlay"></div>
+        <div class="govuk-modal__content govuk-modal__content--wide">
+            <h2 class="govuk-heading-l">Konfiguracja systemu</h2>
+
+            <ul class="govuk-tabs__list">
+                <li class="govuk-tabs__list-item">
+                    <button type="button" class="govuk-tabs__tab govuk-tabs__tab--selected config-tab" data-tab="wykonawca">Wykonawca</button>
+                </li>
+                <li class="govuk-tabs__list-item">
+                    <button type="button" class="govuk-tabs__tab config-tab" data-tab="klienci">Klienci</button>
+                </li>
+                <li class="govuk-tabs__list-item">
+                    <button type="button" class="govuk-tabs__tab config-tab" data-tab="bledy">Błędy</button>
+                </li>
+                <li class="govuk-tabs__list-item">
+                    <button type="button" class="govuk-tabs__tab config-tab" data-tab="poprawki">Poprawki</button>
+                </li>
+            </ul>
+
+            <!-- Wykonawca Tab -->
+            <div id="tab-wykonawca" class="govuk-tabs__panel config-tab-content">
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="wykonawca-name">
+                        Nazwa wykonawcy
+                    </label>
+                    <input class="govuk-input" id="wykonawca-name" type="text" placeholder="Wpisz nazwę wykonawcy">
+                </div>
+                <button type="button" id="save-wykonawca-btn" class="govuk-button">Zapisz</button>
+            </div>
+
+            <!-- Klienci Tab -->
+            <div id="tab-klienci" class="govuk-tabs__panel govuk-tabs__panel--hidden config-tab-content">
+                <div class="config-list-header">
+                    <h3 class="govuk-heading-s">Lista klientów</h3>
+                    <button type="button" id="add-klient-btn" class="govuk-button govuk-button--small">+ Dodaj</button>
+                </div>
+                <div id="klienci-list" class="config-list">
+                    <!-- Klienci will be loaded here -->
                 </div>
             </div>
+
+            <!-- Błędy Tab -->
+            <div id="tab-bledy" class="govuk-tabs__panel govuk-tabs__panel--hidden config-tab-content">
+                <div class="config-list-header">
+                    <h3 class="govuk-heading-s">Szablony błędów</h3>
+                    <button type="button" id="add-blad-btn" class="govuk-button govuk-button--small">+ Dodaj</button>
+                </div>
+                <div id="bledy-list" class="config-list">
+                    <!-- Templates will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Poprawki Tab -->
+            <div id="tab-poprawki" class="govuk-tabs__panel govuk-tabs__panel--hidden config-tab-content">
+                <div class="config-list-header">
+                    <h3 class="govuk-heading-s">Szablony poprawek</h3>
+                    <button type="button" id="add-poprawka-btn" class="govuk-button govuk-button--small">+ Dodaj</button>
+                </div>
+                <div id="poprawki-list" class="config-list">
+                    <!-- Templates will be loaded here -->
+                </div>
+            </div>
+
+            <div class="govuk-button-group govuk-!-margin-top-4">
+                <button type="button" id="close-config-btn" class="govuk-button govuk-button--secondary">Zamknij</button>
+            </div>
         </div>
-    </footer>
+    </div>
+
+    <!-- Load Report Modal -->
+    <div id="load-report-modal" class="govuk-modal" style="display: none;">
+        <div class="govuk-modal__overlay"></div>
+        <div class="govuk-modal__content">
+            <h2 class="govuk-heading-l">Wczytaj raport</h2>
+            <div id="reports-list" class="reports-list">
+                <!-- Reports will be loaded here -->
+            </div>
+            <div class="govuk-button-group govuk-!-margin-top-4">
+                <button type="button" id="close-load-modal-btn" class="govuk-button govuk-button--secondary">Anuluj</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Hidden template for content items -->
     <template id="content-item-template">
-        <div class="content-item govuk-!-margin-bottom-6">
+        <div class="content-item govuk-panel">
             <div class="content-item-header">
                 <h3 class="govuk-heading-s govuk-!-margin-bottom-0">Element <span class="item-number"></span></h3>
-                <button type="button" class="btn-remove govuk-button govuk-button--warning govuk-button--small" title="Usuń element">
-                    Usuń
-                </button>
+                <button type="button" class="btn-remove govuk-button govuk-button--warning govuk-button--small">Usuń</button>
             </div>
             <div class="content-item-body">
                 <div class="govuk-form-group">
-                    <label class="govuk-label">
-                        Typ treści
-                    </label>
+                    <label class="govuk-label">Typ treści</label>
                     <select class="govuk-select content-type" required>
                         <option value="">-- Wybierz typ --</option>
                         <option value="post">Post</option>
@@ -251,35 +237,25 @@
                 </div>
 
                 <div class="govuk-form-group">
-                    <label class="govuk-label">
-                        Tytuł
-                    </label>
+                    <label class="govuk-label">Tytuł</label>
                     <div class="title-input-wrapper">
                         <input type="text" class="govuk-input content-title" placeholder="Tytuł strony (wpisz lub pobierz automatycznie)">
-                        <button type="button" class="btn-fetch-title govuk-button govuk-button--secondary govuk-button--small" title="Pobierz tytuł ze strony">
-                            Pobierz tytuł
-                        </button>
+                        <button type="button" class="btn-fetch-title govuk-button govuk-button--secondary govuk-button--small">Pobierz</button>
                     </div>
                 </div>
 
                 <div class="govuk-form-group">
-                    <label class="govuk-label">
-                        Adres URL
-                    </label>
+                    <label class="govuk-label">Adres URL</label>
                     <input type="url" class="govuk-input content-url" placeholder="https://example.com" required>
                 </div>
 
                 <div class="govuk-form-group">
-                    <label class="govuk-label">
-                        Zidentyfikowane problemy
-                    </label>
+                    <label class="govuk-label">Zidentyfikowane problemy</label>
                     <div class="template-selector">
                         <select class="govuk-select problems-template-select">
                             <option value="">-- Wybierz szablon błędu --</option>
                         </select>
-                        <button type="button" class="btn-insert-template govuk-button govuk-button--secondary govuk-button--small" data-target="problems">
-                            Wstaw
-                        </button>
+                        <button type="button" class="btn-insert-template govuk-button govuk-button--secondary govuk-button--small" data-target="problems">Wstaw</button>
                     </div>
                     <div class="editor-wrapper">
                         <div class="content-problems-editor"></div>
@@ -287,16 +263,12 @@
                 </div>
 
                 <div class="govuk-form-group">
-                    <label class="govuk-label">
-                        Wprowadzone poprawki
-                    </label>
+                    <label class="govuk-label">Wprowadzone poprawki</label>
                     <div class="template-selector">
                         <select class="govuk-select fixes-template-select">
                             <option value="">-- Wybierz szablon poprawki --</option>
                         </select>
-                        <button type="button" class="btn-insert-template govuk-button govuk-button--secondary govuk-button--small" data-target="fixes">
-                            Wstaw
-                        </button>
+                        <button type="button" class="btn-insert-template govuk-button govuk-button--secondary govuk-button--small" data-target="fixes">Wstaw</button>
                     </div>
                     <div class="editor-wrapper">
                         <div class="content-fixes-editor"></div>
@@ -304,12 +276,8 @@
                 </div>
 
                 <div class="govuk-form-group">
-                    <label class="govuk-label">
-                        Zdjęcia
-                    </label>
-                    <button type="button" class="btn-add-screenshot govuk-button govuk-button--secondary govuk-button--small">
-                        Dodaj zdjęcie
-                    </button>
+                    <label class="govuk-label">Zdjęcia</label>
+                    <button type="button" class="btn-add-screenshot govuk-button govuk-button--secondary govuk-button--small">+ Dodaj zdjęcie</button>
                     <div class="screenshots-container">
                         <!-- Screenshots will be added here dynamically -->
                     </div>
@@ -320,32 +288,25 @@
 
     <!-- Hidden template for screenshot items -->
     <template id="screenshot-item-template">
-        <div class="screenshot-item govuk-!-margin-top-4">
+        <div class="screenshot-item govuk-inset-text">
             <div class="screenshot-preview">
                 <img src="" alt="Zdjęcie">
             </div>
             <div class="govuk-form-group govuk-!-margin-top-2">
-                <label class="govuk-label govuk-label--s">
-                    Opis zdjęcia
-                </label>
+                <label class="govuk-label govuk-label--s">Opis zdjęcia</label>
                 <textarea class="govuk-textarea screenshot-description" rows="2" placeholder="Opcjonalny opis zdjęcia..."></textarea>
             </div>
-            <button type="button" class="btn-remove-screenshot-item govuk-button govuk-button--warning govuk-button--small">
-                Usuń zdjęcie
-            </button>
+            <div class="screenshot-timestamp govuk-body-s"></div>
+            <button type="button" class="btn-remove-screenshot-item govuk-button govuk-button--warning govuk-button--small">Usuń zdjęcie</button>
         </div>
     </template>
 
     <!-- Floating Add Element Button -->
-    <button type="button" id="add-content-btn" class="floating-add-btn govuk-button" data-module="govuk-button">
-        + Dodaj element
-    </button>
+    <button type="button" id="add-content-btn" class="floating-add-btn govuk-button">+ Dodaj element</button>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/govuk-frontend@5.4.0/dist/govuk/govuk-frontend.min.js"></script>
+    <!-- Quill Editor -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-    <script>window.GOVUKFrontend.initAll()</script>
-    <script src="script.js"></script>
+    <script src="script-web.js"></script>
     <script src="pdf-export.js"></script>
 </body>
 </html>
