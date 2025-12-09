@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widok Klienta - Raporty i Skany</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .client-view-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .client-view-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .client-view-header h1 {
+            color: #667eea;
+            margin: 0;
+        }
+
+        .client-selector {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .client-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .client-selector select {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .data-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .file-type-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .file-type-json {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .file-type-html {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .file-type-csv {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .file-type-txt {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            font-size: 12px;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .user-role {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 20000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .client-name {
+            font-size: 24px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            flex: 1;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="client-view-container">
+        <!-- Header -->
+        <div class="client-view-header">
+            <h1>📁 Widok Klienta</h1>
+            <div class="header-actions">
+                <div id="user-info" class="user-info"></div>
+                <button type="button" onclick="window.location.href='index.html'" class="btn btn-secondary btn-small">
+                    ← Powrót
+                </button>
+                <button type="button" onclick="logout()" class="btn btn-danger btn-small">
+                    🚪 Wyloguj
+                </button>
+            </div>
+        </div>
+
+        <!-- Client Selector -->
+        <div class="client-selector">
+            <label for="client-select">Wybierz klienta:</label>
+            <select id="client-select" onchange="loadClientData()">
+                <option value="">-- Wybierz klienta --</option>
+            </select>
+        </div>
+
+        <!-- Client Data Section -->
+        <div id="client-data-section" style="display: none;">
+            <div class="client-name" id="client-name"></div>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number" id="reports-count">0</div>
+                    <div class="stat-label">Raportów ręcznych</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="scans-count">0</div>
+                    <div class="stat-label">Skanów Oobee</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('reports')">📝 Raporty ręczne</button>
+                <button class="tab" onclick="switchTab('scans')">📊 Skany Oobee</button>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reports-tab" class="tab-content active">
+                <div id="reports-table-container"></div>
+            </div>
+
+            <!-- Scans Tab -->
+            <div id="scans-tab" class="tab-content">
+                <div id="scans-table-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'api.php';
+        let currentUser = null;
+        let klienci = [];
+        let currentKlientId = null;
+        let currentClientData = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuthentication();
+            await loadClients();
+        });
+
+        // Authentication
+        async function checkAuthentication() {
+            try {
+                const response = await fetch(`${API_URL}?action=check_auth`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+                const result = await response.json();
+
+                if (!response.ok || !result.authenticated) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                currentUser = result.user;
+                updateUserInfo();
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        function updateUserInfo() {
+            const userInfoDiv = document.getElementById('user-info');
+            if (currentUser) {
+                const roleName = currentUser.role === 'administrator' ? 'Administrator' : 'Audytor';
+                userInfoDiv.innerHTML = `
+                    <span class="user-name">${currentUser.full_name || currentUser.username}</span>
+                    <span class="user-role">${roleName}</span>
+                `;
+            }
+        }
+
+        async function logout() {
+            try {
+                await apiCall('logout', {}, 'POST');
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Load clients
+        async function loadClients() {
+            try {
+                const config = await apiCall('get_config');
+                klienci = config.klienci || [];
+
+                const clientSelect = document.getElementById('client-select');
+                clientSelect.innerHTML = '<option value="">-- Wybierz klienta --</option>';
+                klienci.forEach(klient => {
+                    const option = document.createElement('option');
+                    option.value = klient.id;
+                    option.textContent = klient.nazwa;
+                    clientSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load clients:', error);
+            }
+        }
+
+        // Load client data
+        async function loadClientData() {
+            const select = document.getElementById('client-select');
+            currentKlientId = select.value;
+
+            if (!currentKlientId) {
+                document.getElementById('client-data-section').style.display = 'none';
+                return;
+            }
+
+            showLoading();
+            try {
+                const result = await apiCall(`get_client_data&klient_id=${currentKlientId}`);
+                currentClientData = result;
+
+                // Update client name
+                document.getElementById('client-name').textContent = result.klient.nazwa;
+
+                // Update stats
+                document.getElementById('reports-count').textContent = result.reports.length;
+                document.getElementById('scans-count').textContent = result.scans.length;
+
+                // Display data
+                displayReports(result.reports);
+                displayScans(result.scans);
+
+                // Show section
+                document.getElementById('client-data-section').style.display = 'block';
+            } catch (error) {
+                console.error('Failed to load client data:', error);
+                alert('Nie udało się załadować danych klienta');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(`${tab}-tab`).classList.add('active');
+        }
+
+        // Display reports
+        function displayReports(reports) {
+            const container = document.getElementById('reports-table-container');
+
+            if (reports.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <h3>Brak raportów ręcznych</h3>
+                        <p>Nie ma jeszcze żadnych raportów dla tego klienta.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Data monitoringu</th>
+                            <th>Zakres</th>
+                            <th>Okres</th>
+                            ${currentUser.role === 'administrator' ? '<th>Audytor</th>' : ''}
+                            <th>Data utworzenia</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            reports.forEach(report => {
+                const monitoringDate = new Date(report.monitoring_date).toLocaleDateString('pl-PL');
+                const createdDate = new Date(report.created_at).toLocaleDateString('pl-PL');
+                const okresOd = new Date(report.okres_od).toLocaleDateString('pl-PL');
+                const okresDo = new Date(report.okres_do).toLocaleDateString('pl-PL');
+
+                html += `
+                    <tr>
+                        <td><strong>${monitoringDate}</strong></td>
+                        <td>${escapeHtml(report.zakres.substring(0, 50))}${report.zakres.length > 50 ? '...' : ''}</td>
+                        <td>${okresOd} - ${okresDo}</td>
+                        ${currentUser.role === 'administrator' ? `<td>${escapeHtml(report.audytor_name || report.username)}</td>` : ''}
+                        <td>${createdDate}</td>
+                        <td>
+                            <button onclick="editReport(${report.id})" class="btn btn-secondary btn-small" title="Edytuj">
+                                ✏️
+                            </button>
+                            <button onclick="deleteReport(${report.id})" class="btn btn-danger btn-small" title="Usuń">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Display scans
+        function displayScans(scans) {
+            const container = document.getElementById('scans-table-container');
+
+            if (scans.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h3>Brak skanów Oobee</h3>
+                        <p>Nie ma jeszcze żadnych skanów Oobee dla tego klienta.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nazwa skanu</th>
+                            <th>Data skanu</th>
+                            ${currentUser.role === 'administrator' ? '<th>Audytor</th>' : ''}
+                            <th>Typ</th>
+                            <th>Rozmiar</th>
+                            <th>Data dodania</th>
+                            <th>Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            scans.forEach(scan => {
+                const scanDate = new Date(scan.scan_date).toLocaleDateString('pl-PL');
+                const createdDate = new Date(scan.created_at).toLocaleDateString('pl-PL');
+                const fileSize = formatFileSize(scan.file_size);
+                const fileTypeClass = `file-type-${scan.file_type}`;
+
+                html += `
+                    <tr>
+                        <td><strong>${escapeHtml(scan.scan_name)}</strong></td>
+                        <td>${scanDate}</td>
+                        ${currentUser.role === 'administrator' ? `<td>${escapeHtml(scan.audytor_name || scan.username)}</td>` : ''}
+                        <td><span class="file-type-badge ${fileTypeClass}">${scan.file_type}</span></td>
+                        <td>${fileSize}</td>
+                        <td>${createdDate}</td>
+                        <td>
+                            ${scan.file_type === 'html' ? `
+                                <button onclick="previewScan(${scan.id})" class="btn btn-primary btn-small" title="Podgląd">
+                                    👁️
+                                </button>
+                            ` : ''}
+                            <button onclick="downloadScan(${scan.id})" class="btn btn-secondary btn-small" title="Pobierz">
+                                📥
+                            </button>
+                            <button onclick="deleteScan(${scan.id})" class="btn btn-danger btn-small" title="Usuń">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Report actions
+        function editReport(reportId) {
+            window.location.href = `index.html?edit=${reportId}`;
+        }
+
+        async function deleteReport(reportId) {
+            if (!confirm('Czy na pewno chcesz usunąć ten raport?')) {
+                return;
+            }
+
+            showLoading();
+            try {
+                await apiCall('delete_report', { id: reportId }, 'POST');
+                await loadClientData();
+                alert('Raport został usunięty');
+            } catch (error) {
+                console.error('Failed to delete report:', error);
+                alert('Nie udało się usunąć raportu: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Scan actions
+        function previewScan(scanId) {
+            window.open(`${API_URL}?action=view_scan&id=${scanId}`, '_blank');
+        }
+
+        function downloadScan(scanId) {
+            window.open(`${API_URL}?action=download_scan&id=${scanId}`, '_blank');
+        }
+
+        async function deleteScan(scanId) {
+            if (!confirm('Czy na pewno chcesz usunąć ten skan?')) {
+                return;
+            }
+
+            showLoading();
+            try {
+                await apiCall('delete_scan', { id: scanId }, 'POST');
+                await loadClientData();
+                alert('Skan został usunięty');
+            } catch (error) {
+                console.error('Failed to delete scan:', error);
+                alert('Nie udało się usunąć skanu: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Utility functions
+        async function apiCall(action, data = {}, method = 'GET') {
+            const url = `${API_URL}?action=${action}`;
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            };
+
+            if (method === 'POST' && Object.keys(data).length > 0) {
+                options.body = JSON.stringify(data);
+            }
+
+            const response = await fetch(url, options);
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'API call failed');
+            }
+
+            if (result.hasOwnProperty('success') && !result.success) {
+                throw new Error(result.error || 'API call failed');
+            }
+
+            return result;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('active');
+        }
+    </script>
+</body>
+</html>

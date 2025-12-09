@@ -581,6 +581,11 @@
                         <td class="file-size">${fileSize}</td>
                         <td>${createdDate}</td>
                         <td>
+                            ${scan.file_type === 'html' ? `
+                                <button onclick="previewScan(${scan.id})" class="btn btn-primary btn-small" title="Podgląd">
+                                    👁️
+                                </button>
+                            ` : ''}
                             <button onclick="downloadScan(${scan.id})" class="btn btn-secondary btn-small" title="Pobierz">
                                 📥
                             </button>
@@ -686,6 +691,11 @@
             } finally {
                 hideLoading();
             }
+        }
+
+        // Preview scan (for HTML files)
+        async function previewScan(scanId) {
+            window.open(`${API_URL}?action=view_scan&id=${scanId}`, '_blank');
         }
 
         // Download scan

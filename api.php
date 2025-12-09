@@ -39,6 +39,10 @@
  * POST /api.php?action=add_scan           - Add new Oobee scan
  * POST /api.php?action=delete_scan        - Delete scan
  * GET  /api.php?action=download_scan&id=X - Download scan file
+ * GET  /api.php?action=view_scan&id=X     - View HTML scan in browser
+ *
+ * Client View Endpoints (Authenticated):
+ * GET  /api.php?action=get_client_data&klient_id=X - Get all reports and scans for client
  */
 
 require_once 'config.php';
@@ -188,6 +192,17 @@ switch ($action) {
 
     case 'download_scan':
         downloadScan($pdo);
+        break;
+
+    case 'view_scan':
+        viewScan($pdo);
+        break;
+
+    // ========================================
+    // CLIENT VIEW
+    // ========================================
+    case 'get_client_data':
+        getClientData($pdo);
         break;
 
     default:
@@ -951,5 +966,134 @@ function downloadScan($pdo) {
         exit;
     } catch (Exception $e) {
         sendError('Failed to download scan: ' . $e->getMessage(), 500);
+    }
+}
+
+/**
+ * View scan data in browser (for HTML previews)
+ */
+function viewScan($pdo) {
+    try {
+        $user = getCurrentUser();
+        $scanId = $_GET['id'] ?? null;
+
+        if (!$scanId) {
+            sendError('ID skanu jest wymagane', 400);
+        }
+
+        // Get scan with permission check
+        if (isAdministrator()) {
+            $stmt = $pdo->prepare("
+                SELECT scan_data, file_type, scan_name
+                FROM oobee_scans
+                WHERE id = ?
+            ");
+            $stmt->execute([$scanId]);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT scan_data, file_type, scan_name
+                FROM oobee_scans
+                WHERE id = ? AND user_id = ?
+            ");
+            $stmt->execute([$scanId, $user['id']]);
+        }
+
+        $scan = $stmt->fetch();
+
+        if (!$scan) {
+            sendError('Skan nie znaleziony lub brak uprawnień', 404);
+        }
+
+        // Only allow viewing HTML files
+        if ($scan['file_type'] !== 'html') {
+            sendError('Tylko pliki HTML mogą być wyświetlane w podglądzie', 400);
+        }
+
+        // Set content type and display inline (not as download)
+        header('Content-Type: text/html; charset=utf-8');
+        header('X-Frame-Options: SAMEORIGIN');
+        echo $scan['scan_data'];
+        exit;
+    } catch (Exception $e) {
+        sendError('Failed to view scan: ' . $e->getMessage(), 500);
+    }
+}
+
+// ========================================
+// CLIENT VIEW HANDLERS
+// ========================================
+
+/**
+ * Get all data for a specific client (reports + scans)
+ * Auditors see only their own data, administrators see all
+ */
+function getClientData($pdo) {
+    try {
+        $user = getCurrentUser();
+        $klientId = $_GET['klient_id'] ?? null;
+
+        if (!$klientId) {
+            sendError('ID klienta jest wymagane', 400);
+        }
+
+        // Verify client exists
+        $stmt = $pdo->prepare("SELECT id, nazwa FROM klienci WHERE id = ?");
+        $stmt->execute([$klientId]);
+        $klient = $stmt->fetch();
+
+        if (!$klient) {
+            sendError('Klient nie znaleziony', 404);
+        }
+
+        // Get reports for this client
+        if (isAdministrator()) {
+            $stmt = $pdo->prepare("
+                SELECT r.*, u.full_name as audytor_name, u.username
+                FROM reports r
+                LEFT JOIN users u ON r.user_id = u.id
+                WHERE r.klient_id = ?
+                ORDER BY r.monitoring_date DESC, r.created_at DESC
+            ");
+            $stmt->execute([$klientId]);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT r.*
+                FROM reports r
+                WHERE r.klient_id = ? AND r.user_id = ?
+                ORDER BY r.monitoring_date DESC, r.created_at DESC
+            ");
+            $stmt->execute([$klientId, $user['id']]);
+        }
+        $reports = $stmt->fetchAll();
+
+        // Get Oobee scans for this client
+        if (isAdministrator()) {
+            $stmt = $pdo->prepare("
+                SELECT s.*, u.full_name as audytor_name, u.username
+                FROM oobee_scans s
+                LEFT JOIN users u ON s.user_id = u.id
+                WHERE s.klient_id = ?
+                ORDER BY s.scan_date DESC, s.created_at DESC
+            ");
+            $stmt->execute([$klientId]);
+        } else {
+            $stmt = $pdo->prepare("
+                SELECT s.*
+                FROM oobee_scans s
+                WHERE s.klient_id = ? AND s.user_id = ?
+                ORDER BY s.scan_date DESC, s.created_at DESC
+            ");
+            $stmt->execute([$klientId, $user['id']]);
+        }
+        $scans = $stmt->fetchAll();
+
+        sendResponse([
+            'success' => true,
+            'klient' => $klient,
+            'reports' => $reports,
+            'scans' => $scans
+        ]);
+    } catch (Exception $e) {
+        sendError('Failed to get client data: ' . $e->getMessage(), 500);
     }
 }
