@@ -1,253 +1,256 @@
 <!--
   WORDPRESS LEFT MENU NAVIGATION
   ================================
-  Wklej ten kod w edytorze WordPress (blok "HTML niestandardowy" / shortcode).
-
-  KONFIGURACJA:
-  - Zmień elementy w tablicy "menuItems" na swoje strony
-  - Dostosuj selektor "contentSelector" do motywu WordPress (patrz komentarz przy zmiennej)
-  - Dostosuj kolory w sekcji :root CSS
+  Wklej ten kod w edytorze WordPress (blok "HTML niestandardowy").
+  KONFIGURACJA: zmień menuItems i contentSelector poniżej w sekcji <script>.
 -->
 
 <style>
-  :root {
-    --menu-bg: #1a3a5c;
-    --menu-hover: #2a5080;
-    --menu-active: #e8f4fd;
-    --menu-active-text: #1a3a5c;
-    --menu-text: #ffffff;
-    --menu-width: 260px;
-    --accent: #2980b9;
-    --border: #d0dce8;
-    --content-bg: #ffffff;
-    --shadow: 0 2px 12px rgba(0,0,0,0.10);
-    --radius: 6px;
+/* Reset agresywny — nadpisuje style motywu WordPress */
+#wlm-wrapper,
+#wlm-wrapper *,
+#wlm-wrapper *::before,
+#wlm-wrapper *::after {
+  box-sizing: border-box !important;
+}
+
+#wlm-wrapper {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+  min-height: 520px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  border: 1px solid #d0dce8 !important;
+  border-radius: 6px !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10) !important;
+  margin: 0 0 24px 0 !important;
+  padding: 0 !important;
+  background: #fff !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* ---- SIDEBAR ---- */
+#wlm-sidebar {
+  width: 260px !important;
+  min-width: 260px !important;
+  max-width: 260px !important;
+  background: #1a3a5c !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#wlm-sidebar-title {
+  padding: 18px 20px 14px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: rgba(255,255,255,0.55) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+}
+
+#wlm-menu {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 8px 0 !important;
+  flex: 1 !important;
+}
+
+#wlm-menu li {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+#wlm-menu li::before,
+#wlm-menu li::after {
+  display: none !important;
+  content: none !important;
+}
+
+#wlm-menu a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 13px 20px !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  border-left: 3px solid transparent !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  background: transparent !important;
+  transition: background 0.18s, border-color 0.18s !important;
+  cursor: pointer !important;
+  line-height: 1.3 !important;
+  width: 100% !important;
+}
+
+#wlm-menu a:hover {
+  background: #2a5080 !important;
+  border-left-color: rgba(255,255,255,0.4) !important;
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+#wlm-menu a.wlm-active {
+  background: #e8f4fd !important;
+  color: #1a3a5c !important;
+  border-left-color: #2980b9 !important;
+  font-weight: 600 !important;
+}
+
+#wlm-menu a .wlm-icon {
+  flex-shrink: 0 !important;
+  font-style: normal !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+}
+
+/* ---- CONTENT AREA ---- */
+#wlm-content {
+  flex: 1 !important;
+  min-width: 0 !important;
+  background: #ffffff !important;
+  overflow: auto !important;
+  position: relative !important;
+  display: block !important;
+}
+
+#wlm-content-inner {
+  padding: 28px 32px !important;
+}
+
+#wlm-content-inner img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* ---- LOADER ---- */
+#wlm-loader {
+  display: none;
+  position: absolute !important;
+  top: 0 !important; right: 0 !important;
+  bottom: 0 !important; left: 0 !important;
+  background: rgba(255,255,255,0.88) !important;
+  z-index: 100 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+#wlm-loader.wlm-visible {
+  display: flex !important;
+}
+
+.wlm-spinner {
+  width: 40px !important;
+  height: 40px !important;
+  border: 4px solid #d0dce8 !important;
+  border-top-color: #2980b9 !important;
+  border-radius: 50% !important;
+  animation: wlmSpin 0.7s linear infinite !important;
+}
+
+@keyframes wlmSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- PLACEHOLDER ---- */
+#wlm-placeholder {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 320px !important;
+  color: #bbb !important;
+  text-align: center !important;
+  padding: 40px !important;
+}
+
+#wlm-placeholder p {
+  font-size: 15px !important;
+  color: #bbb !important;
+  margin: 10px 0 0 0 !important;
+}
+
+/* ---- ERROR ---- */
+.wlm-error {
+  padding: 24px !important;
+  color: #c0392b !important;
+  background: #fdf3f2 !important;
+  border: 1px solid #f5c6c3 !important;
+  border-radius: 6px !important;
+  margin: 20px !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 700px) {
+  #wlm-wrapper {
+    flex-direction: column !important;
   }
-
-  .wlm-wrapper {
-    display: flex;
-    gap: 0;
-    min-height: 500px;
-    font-family: inherit;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
+  #wlm-sidebar {
+    width: 100% !important;
+    min-width: unset !important;
+    max-width: 100% !important;
   }
-
-  /* ---- MENU ---- */
-  .wlm-sidebar {
-    width: var(--menu-width);
-    min-width: var(--menu-width);
-    background: var(--menu-bg);
-    display: flex;
-    flex-direction: column;
+  #wlm-menu {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    padding: 6px !important;
+    gap: 4px !important;
   }
-
-  .wlm-sidebar-title {
-    padding: 18px 20px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.55);
-    border-bottom: 1px solid rgba(255,255,255,0.10);
-    user-select: none;
+  #wlm-menu a {
+    padding: 10px 14px !important;
+    border-left: none !important;
+    border-bottom: 3px solid transparent !important;
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    width: auto !important;
   }
-
-  .wlm-menu {
-    list-style: none;
-    margin: 0;
-    padding: 8px 0;
-    flex: 1;
+  #wlm-menu a.wlm-active {
+    border-left-color: transparent !important;
+    border-bottom-color: #2980b9 !important;
   }
-
-  .wlm-menu li {
-    margin: 0;
-    padding: 0;
+  #wlm-content-inner {
+    padding: 18px !important;
   }
-
-  .wlm-menu a {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 13px 20px;
-    color: var(--menu-text);
-    text-decoration: none;
-    font-size: 15px;
-    font-weight: 400;
-    border-left: 3px solid transparent;
-    transition: background 0.18s, border-color 0.18s, color 0.18s;
-    cursor: pointer;
-    line-height: 1.3;
-  }
-
-  .wlm-menu a:hover {
-    background: var(--menu-hover);
-    border-left-color: rgba(255,255,255,0.4);
-  }
-
-  .wlm-menu a.active {
-    background: var(--menu-active);
-    color: var(--menu-active-text);
-    border-left-color: var(--accent);
-    font-weight: 600;
-  }
-
-  .wlm-menu a .wlm-icon {
-    flex-shrink: 0;
-    opacity: 0.7;
-    font-style: normal;
-  }
-
-  .wlm-menu a.active .wlm-icon {
-    opacity: 1;
-  }
-
-  /* ---- CONTENT ---- */
-  .wlm-content {
-    flex: 1;
-    background: var(--content-bg);
-    overflow: auto;
-    position: relative;
-    min-width: 0;
-  }
-
-  .wlm-content-inner {
-    padding: 30px 36px;
-  }
-
-  /* ---- LOADER ---- */
-  .wlm-loader {
-    display: none;
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.85);
-    z-index: 10;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .wlm-loader.visible {
-    display: flex;
-  }
-
-  .wlm-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: wlm-spin 0.7s linear infinite;
-  }
-
-  @keyframes wlm-spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .wlm-loader-text {
-    color: #666;
-    font-size: 14px;
-  }
-
-  /* ---- PLACEHOLDER ---- */
-  .wlm-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    min-height: 300px;
-    color: #aaa;
-    text-align: center;
-    padding: 40px;
-  }
-
-  .wlm-placeholder svg {
-    opacity: 0.3;
-    margin-bottom: 16px;
-  }
-
-  .wlm-placeholder p {
-    font-size: 15px;
-    margin: 0;
-  }
-
-  /* ---- ERROR ---- */
-  .wlm-error {
-    padding: 30px;
-    color: #c0392b;
-    background: #fdf3f2;
-    border: 1px solid #f5c6c3;
-    border-radius: var(--radius);
-    margin: 20px;
-    font-size: 14px;
-  }
-
-  /* ---- RESPONSIVE ---- */
-  @media (max-width: 768px) {
-    .wlm-wrapper {
-      flex-direction: column;
-    }
-
-    .wlm-sidebar {
-      width: 100%;
-      min-width: unset;
-    }
-
-    .wlm-menu {
-      display: flex;
-      flex-wrap: wrap;
-      padding: 6px;
-      gap: 4px;
-    }
-
-    .wlm-menu a {
-      padding: 10px 14px;
-      border-left: none;
-      border-bottom: 3px solid transparent;
-      border-radius: 4px;
-      font-size: 13px;
-    }
-
-    .wlm-menu a.active {
-      border-left-color: transparent;
-      border-bottom-color: var(--accent);
-    }
-
-    .wlm-sidebar-title {
-      padding: 12px 16px 10px;
-    }
-
-    .wlm-content-inner {
-      padding: 20px;
-    }
-  }
+}
 </style>
 
-<div class="wlm-wrapper" id="wlm-wrapper">
+<div id="wlm-wrapper">
 
-  <!-- LEWE MENU -->
-  <nav class="wlm-sidebar" role="navigation" aria-label="Menu nawigacyjne">
-    <div class="wlm-sidebar-title">Menu</div>
-    <ul class="wlm-menu" id="wlm-menu">
-      <!-- Elementy menu generowane przez JS -->
-    </ul>
+  <nav id="wlm-sidebar" role="navigation" aria-label="Menu">
+    <div id="wlm-sidebar-title">Menu</div>
+    <ul id="wlm-menu"></ul>
   </nav>
 
-  <!-- OBSZAR TREŚCI -->
-  <div class="wlm-content" id="wlm-content">
-    <div class="wlm-loader" id="wlm-loader" aria-live="polite" aria-label="Ładowanie">
+  <div id="wlm-content">
+    <div id="wlm-loader" aria-live="polite">
       <div class="wlm-spinner"></div>
-      <span class="wlm-loader-text">Wczytywanie...</span>
+      <span style="color:#666;font-size:14px;">Wczytywanie...</span>
     </div>
     <div id="wlm-body">
-      <div class="wlm-placeholder">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      <div id="wlm-placeholder">
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.3">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
         </svg>
         <p>Wybierz temat z menu po lewej stronie</p>
       </div>
@@ -260,81 +263,62 @@
 (function () {
   'use strict';
 
-  // ================================================================
-  // KONFIGURACJA — dostosuj do swojej strony
-  // ================================================================
+  /* ================================================================
+     KONFIGURACJA — zmień na swoje dane
+     ================================================================ */
 
   var menuItems = [
-    {
-      label: 'Oferta kursów',
-      url: '/oferta-kursow/',
-      icon: '📋'
-    },
-    {
-      label: 'Harmonogram zajęć',
-      url: '/harmonogram-zajec/',
-      icon: '📅'
-    },
-    {
-      label: 'Rekrutacja',
-      url: '/rekrutacja/',
-      icon: '📝'
-    },
-    {
-      label: 'Cennik',
-      url: '/cennik/',
-      icon: '💳'
-    },
-    {
-      label: 'Kontakt',
-      url: '/kontakt/',
-      icon: '📞'
-    }
+    { label: 'Oferta kursów',     url: '/oferta-kursow/',     icon: '📋' },
+    { label: 'Harmonogram zajęć', url: '/harmonogram-zajec/', icon: '📅' },
+    { label: 'Rekrutacja',        url: '/rekrutacja/',        icon: '📝' },
+    { label: 'Cennik',            url: '/cennik/',            icon: '💳' },
+    { label: 'Kontakt',           url: '/kontakt/',           icon: '📞' }
   ];
 
-  // Selektor głównej treści strony WordPress.
-  // Sprawdź w DevTools (F12 → Inspect) jak nazywa się kontener z treścią w Twoim motywie.
-  // Typowe wartości:
-  //   '.entry-content'   — Twenty Twenty, Astra, OceanWP, GeneratePress
-  //   '.post-content'    — niektóre motywy premium
-  //   'article'          — szeroki kontener artykułu
-  //   'main'             — cała sekcja main
-  //   '.site-content'    — Twenty Nineteen / Twenty Twenty-One
-  var contentSelector = '.entry-content, .post-content, article .content, .page-content, main .content, .elementor-section-wrap, .wp-block-group__inner-container';
+  /* Selektor kontenera z treścią — dopasuj do swojego motywu.
+     Otwórz F12 → Inspect na tekście strony docelowej i sprawdź nazwę klasy.
+     Typowe: '.entry-content' | '.post-content' | 'main' | 'article' */
+  var contentSelectors = [
+    '.entry-content',
+    '.post-content',
+    '.page-content',
+    '.elementor-section-wrap',
+    '.wp-block-group__inner-container',
+    'article .content',
+    'main .content',
+    'main',
+    'article',
+    '#content',
+    '#main',
+    '.site-main'
+  ];
 
-  // Alternatywny selektor jeśli powyższy nic nie znajdzie
-  var fallbackSelector = 'main, article, #content, #main, .site-main';
+  /* ================================================================
+     LOGIKA — nie trzeba zmieniać
+     ================================================================ */
 
-  // ================================================================
-  // LOGIKA — nie trzeba modyfikować
-  // ================================================================
-
-  var menuEl  = document.getElementById('wlm-menu');
-  var bodyEl  = document.getElementById('wlm-body');
+  var menuEl   = document.getElementById('wlm-menu');
+  var bodyEl   = document.getElementById('wlm-body');
   var loaderEl = document.getElementById('wlm-loader');
 
   function buildMenu() {
-    menuItems.forEach(function (item, index) {
+    menuItems.forEach(function (item) {
       var li = document.createElement('li');
       var a  = document.createElement('a');
       a.href = item.url;
-      a.setAttribute('data-url', item.url);
-      a.setAttribute('data-index', index);
 
       if (item.icon) {
-        var span = document.createElement('span');
-        span.className = 'wlm-icon';
-        span.setAttribute('aria-hidden', 'true');
-        span.textContent = item.icon;
-        a.appendChild(span);
+        var ico = document.createElement('span');
+        ico.className = 'wlm-icon';
+        ico.setAttribute('aria-hidden', 'true');
+        ico.textContent = item.icon;
+        a.appendChild(ico);
       }
-
-      var text = document.createTextNode(item.label);
-      a.appendChild(text);
+      a.appendChild(document.createTextNode(' ' + item.label));
 
       a.addEventListener('click', function (e) {
         e.preventDefault();
-        loadContent(item.url, a);
+        loadPage(item.url, a);
       });
 
       li.appendChild(a);
@@ -342,131 +326,90 @@
     });
   }
 
-  function setActiveLink(linkEl) {
+  function setActive(linkEl) {
     menuEl.querySelectorAll('a').forEach(function (a) {
-      a.classList.remove('active');
+      a.classList.remove('wlm-active');
       a.removeAttribute('aria-current');
     });
-    linkEl.classList.add('active');
+    linkEl.classList.add('wlm-active');
     linkEl.setAttribute('aria-current', 'page');
-  }
-
-  function showLoader() {
-    loaderEl.classList.add('visible');
-  }
-
-  function hideLoader() {
-    loaderEl.classList.remove('visible');
   }
 
   function extractContent(html) {
     var parser = new DOMParser();
     var doc = parser.parseFromString(html, 'text/html');
 
-    // Usuń niepotrzebne elementy z pobranego dokumentu
-    ['script', 'style', 'noscript', 'iframe[src*="ads"]'].forEach(function (sel) {
-      doc.querySelectorAll(sel).forEach(function (el) { el.remove(); });
+    /* Usuń header, footer, nav, aside ze źródła */
+    ['header', 'footer', 'nav', 'aside', '.site-header', '.site-footer',
+     '.main-navigation', '#masthead', '#colophon', '.widget-area'].forEach(function (s) {
+      doc.querySelectorAll(s).forEach(function (el) { el.remove(); });
     });
 
-    // Szukaj głównej treści wg selektora
-    var selectors = contentSelector.split(',').map(function (s) { return s.trim(); });
-    for (var i = 0; i < selectors.length; i++) {
-      var found = doc.querySelector(selectors[i]);
-      if (found && found.innerHTML.trim().length > 50) {
-        return found.innerHTML;
+    for (var i = 0; i < contentSelectors.length; i++) {
+      var el = doc.querySelector(contentSelectors[i]);
+      if (el && el.innerHTML.trim().length > 30) {
+        return el.innerHTML;
       }
     }
 
-    // Fallback
-    var fallbacks = fallbackSelector.split(',').map(function (s) { return s.trim(); });
-    for (var j = 0; j < fallbacks.length; j++) {
-      var fb = doc.querySelector(fallbacks[j]);
-      if (fb && fb.innerHTML.trim().length > 50) {
-        return fb.innerHTML;
-      }
-    }
-
-    // Ostateczny fallback — cały body
     var body = doc.querySelector('body');
-    return body ? body.innerHTML : '<p>Nie udało się pobrać treści.</p>';
+    return body ? body.innerHTML : '<p>Brak treści.</p>';
   }
 
-  function fixRelativeUrls(html, baseUrl) {
-    // Popraw względne linki obrazków i href
-    var base = window.location.origin;
+  function fixUrls(html) {
+    var origin = window.location.origin;
     return html
-      .replace(/src="\/([^"]*?)"/g, 'src="' + base + '/$1"')
-      .replace(/href="\/([^"]*?)"/g, 'href="' + base + '/$1"');
+      .replace(/(\ssrc=["'])\/(?!\/)/g, '$1' + origin + '/')
+      .replace(/(\shref=["'])\/(?!\/)/g, '$1' + origin + '/');
   }
 
-  function loadContent(url, linkEl) {
-    setActiveLink(linkEl);
-    showLoader();
+  function loadPage(url, linkEl) {
+    setActive(linkEl);
+    loaderEl.classList.add('wlm-visible');
     bodyEl.innerHTML = '';
 
-    fetch(url, {
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'same-origin'
-    })
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error('HTTP ' + response.status + ': ' + response.statusText);
-        }
-        return response.text();
+    fetch(url, { credentials: 'same-origin' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('Strona nie istnieje (HTTP ' + r.status + ')');
+        return r.text();
       })
       .then(function (html) {
-        var content = extractContent(html);
-        content = fixRelativeUrls(content, url);
+        var content = fixUrls(extractContent(html));
+        var div = document.createElement('div');
+        div.id = 'wlm-content-inner';
+        div.innerHTML = content;
 
-        var inner = document.createElement('div');
-        inner.className = 'wlm-content-inner';
-        inner.innerHTML = content;
-
-        // Otwieraj linki wewnętrzne w tym samym widoku, zewnętrzne w nowej karcie
-        inner.querySelectorAll('a[href]').forEach(function (a) {
-          var href = a.getAttribute('href');
-          if (href && href.startsWith('/')) {
-            a.addEventListener('click', function (e) {
-              var menuLink = menuEl.querySelector('a[data-url="' + href + '"]');
-              if (menuLink) {
-                e.preventDefault();
-                loadContent(href, menuLink);
-              }
-              // jeśli nie ma w menu — otwiera normalnie
-            });
-          } else if (href && !href.startsWith('#') && !href.startsWith(window.location.origin)) {
+        /* Linki zewnętrzne → nowa karta */
+        div.querySelectorAll('a[href]').forEach(function (a) {
+          var h = a.getAttribute('href') || '';
+          if (h && !h.startsWith('#') && !h.startsWith('/') && !h.startsWith(window.location.origin)) {
             a.setAttribute('target', '_blank');
             a.setAttribute('rel', 'noopener noreferrer');
           }
         });
 
-        bodyEl.appendChild(inner);
-        hideLoader();
-
-        // Scroll do góry treści
-        document.getElementById('wlm-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        bodyEl.appendChild(div);
+        loaderEl.classList.remove('wlm-visible');
+        document.getElementById('wlm-wrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       })
       .catch(function (err) {
-        var errDiv = document.createElement('div');
-        errDiv.className = 'wlm-error';
-        errDiv.innerHTML =
-          '<strong>Nie udało się wczytać treści.</strong><br>' +
-          'Adres: <code>' + url + '</code><br>' +
-          'Błąd: ' + err.message + '<br><br>' +
-          '<small>Upewnij się, że adres URL strony jest poprawny i strona istnieje.</small>';
-        bodyEl.appendChild(errDiv);
-        hideLoader();
-        console.error('[WLM] Błąd ładowania:', err);
+        var e = document.createElement('div');
+        e.className = 'wlm-error';
+        e.innerHTML = '<strong>Nie udało się wczytać treści.</strong><br>'
+          + 'URL: <code>' + url + '</code><br>'
+          + 'Błąd: ' + err.message + '<br><br>'
+          + '<small>Sprawdź w F12 → Console czy nie ma błędów JS oraz czy podany URL istnieje.</small>';
+        bodyEl.appendChild(e);
+        loaderEl.classList.remove('wlm-visible');
+        console.error('[WLM] Błąd:', err);
       });
   }
 
-  // Inicjalizacja
   buildMenu();
 
-  // Opcjonalnie: wczytaj pierwszą stronę automatycznie po załadowaniu
-  // Odkomentuj poniższe linie, aby automatycznie wyświetlić pierwszą pozycję menu:
-  // var firstLink = menuEl.querySelector('a');
-  // if (firstLink) loadContent(menuItems[0].url, firstLink);
+  /* Opcjonalnie — odkomentuj aby automatycznie wczytać pierwszą stronę: */
+  // var first = menuEl.querySelector('a');
+  // if (first) loadPage(menuItems[0].url, first);
 
 })();
 </script>
