@@ -1,0 +1,472 @@
+<!--
+  WORDPRESS LEFT MENU NAVIGATION
+  ================================
+  Wklej ten kod w edytorze WordPress (blok "HTML niestandardowy" / shortcode).
+
+  KONFIGURACJA:
+  - Zmień elementy w tablicy "menuItems" na swoje strony
+  - Dostosuj selektor "contentSelector" do motywu WordPress (patrz komentarz przy zmiennej)
+  - Dostosuj kolory w sekcji :root CSS
+-->
+
+<style>
+  :root {
+    --menu-bg: #1a3a5c;
+    --menu-hover: #2a5080;
+    --menu-active: #e8f4fd;
+    --menu-active-text: #1a3a5c;
+    --menu-text: #ffffff;
+    --menu-width: 260px;
+    --accent: #2980b9;
+    --border: #d0dce8;
+    --content-bg: #ffffff;
+    --shadow: 0 2px 12px rgba(0,0,0,0.10);
+    --radius: 6px;
+  }
+
+  .wlm-wrapper {
+    display: flex;
+    gap: 0;
+    min-height: 500px;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  /* ---- MENU ---- */
+  .wlm-sidebar {
+    width: var(--menu-width);
+    min-width: var(--menu-width);
+    background: var(--menu-bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wlm-sidebar-title {
+    padding: 18px 20px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+    user-select: none;
+  }
+
+  .wlm-menu {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+    flex: 1;
+  }
+
+  .wlm-menu li {
+    margin: 0;
+    padding: 0;
+  }
+
+  .wlm-menu a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 20px;
+    color: var(--menu-text);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 400;
+    border-left: 3px solid transparent;
+    transition: background 0.18s, border-color 0.18s, color 0.18s;
+    cursor: pointer;
+    line-height: 1.3;
+  }
+
+  .wlm-menu a:hover {
+    background: var(--menu-hover);
+    border-left-color: rgba(255,255,255,0.4);
+  }
+
+  .wlm-menu a.active {
+    background: var(--menu-active);
+    color: var(--menu-active-text);
+    border-left-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .wlm-menu a .wlm-icon {
+    flex-shrink: 0;
+    opacity: 0.7;
+    font-style: normal;
+  }
+
+  .wlm-menu a.active .wlm-icon {
+    opacity: 1;
+  }
+
+  /* ---- CONTENT ---- */
+  .wlm-content {
+    flex: 1;
+    background: var(--content-bg);
+    overflow: auto;
+    position: relative;
+    min-width: 0;
+  }
+
+  .wlm-content-inner {
+    padding: 30px 36px;
+  }
+
+  /* ---- LOADER ---- */
+  .wlm-loader {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.85);
+    z-index: 10;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .wlm-loader.visible {
+    display: flex;
+  }
+
+  .wlm-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: wlm-spin 0.7s linear infinite;
+  }
+
+  @keyframes wlm-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .wlm-loader-text {
+    color: #666;
+    font-size: 14px;
+  }
+
+  /* ---- PLACEHOLDER ---- */
+  .wlm-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 300px;
+    color: #aaa;
+    text-align: center;
+    padding: 40px;
+  }
+
+  .wlm-placeholder svg {
+    opacity: 0.3;
+    margin-bottom: 16px;
+  }
+
+  .wlm-placeholder p {
+    font-size: 15px;
+    margin: 0;
+  }
+
+  /* ---- ERROR ---- */
+  .wlm-error {
+    padding: 30px;
+    color: #c0392b;
+    background: #fdf3f2;
+    border: 1px solid #f5c6c3;
+    border-radius: var(--radius);
+    margin: 20px;
+    font-size: 14px;
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 768px) {
+    .wlm-wrapper {
+      flex-direction: column;
+    }
+
+    .wlm-sidebar {
+      width: 100%;
+      min-width: unset;
+    }
+
+    .wlm-menu {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 6px;
+      gap: 4px;
+    }
+
+    .wlm-menu a {
+      padding: 10px 14px;
+      border-left: none;
+      border-bottom: 3px solid transparent;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .wlm-menu a.active {
+      border-left-color: transparent;
+      border-bottom-color: var(--accent);
+    }
+
+    .wlm-sidebar-title {
+      padding: 12px 16px 10px;
+    }
+
+    .wlm-content-inner {
+      padding: 20px;
+    }
+  }
+</style>
+
+<div class="wlm-wrapper" id="wlm-wrapper">
+
+  <!-- LEWE MENU -->
+  <nav class="wlm-sidebar" role="navigation" aria-label="Menu nawigacyjne">
+    <div class="wlm-sidebar-title">Menu</div>
+    <ul class="wlm-menu" id="wlm-menu">
+      <!-- Elementy menu generowane przez JS -->
+    </ul>
+  </nav>
+
+  <!-- OBSZAR TREŚCI -->
+  <div class="wlm-content" id="wlm-content">
+    <div class="wlm-loader" id="wlm-loader" aria-live="polite" aria-label="Ładowanie">
+      <div class="wlm-spinner"></div>
+      <span class="wlm-loader-text">Wczytywanie...</span>
+    </div>
+    <div id="wlm-body">
+      <div class="wlm-placeholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <p>Wybierz temat z menu po lewej stronie</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ================================================================
+  // KONFIGURACJA — dostosuj do swojej strony
+  // ================================================================
+
+  var menuItems = [
+    {
+      label: 'Oferta kursów',
+      url: '/oferta-kursow/',
+      icon: '📋'
+    },
+    {
+      label: 'Harmonogram zajęć',
+      url: '/harmonogram-zajec/',
+      icon: '📅'
+    },
+    {
+      label: 'Rekrutacja',
+      url: '/rekrutacja/',
+      icon: '📝'
+    },
+    {
+      label: 'Cennik',
+      url: '/cennik/',
+      icon: '💳'
+    },
+    {
+      label: 'Kontakt',
+      url: '/kontakt/',
+      icon: '📞'
+    }
+  ];
+
+  // Selektor głównej treści strony WordPress.
+  // Sprawdź w DevTools (F12 → Inspect) jak nazywa się kontener z treścią w Twoim motywie.
+  // Typowe wartości:
+  //   '.entry-content'   — Twenty Twenty, Astra, OceanWP, GeneratePress
+  //   '.post-content'    — niektóre motywy premium
+  //   'article'          — szeroki kontener artykułu
+  //   'main'             — cała sekcja main
+  //   '.site-content'    — Twenty Nineteen / Twenty Twenty-One
+  var contentSelector = '.entry-content, .post-content, article .content, .page-content, main .content, .elementor-section-wrap, .wp-block-group__inner-container';
+
+  // Alternatywny selektor jeśli powyższy nic nie znajdzie
+  var fallbackSelector = 'main, article, #content, #main, .site-main';
+
+  // ================================================================
+  // LOGIKA — nie trzeba modyfikować
+  // ================================================================
+
+  var menuEl  = document.getElementById('wlm-menu');
+  var bodyEl  = document.getElementById('wlm-body');
+  var loaderEl = document.getElementById('wlm-loader');
+
+  function buildMenu() {
+    menuItems.forEach(function (item, index) {
+      var li = document.createElement('li');
+      var a  = document.createElement('a');
+      a.href = item.url;
+      a.setAttribute('data-url', item.url);
+      a.setAttribute('data-index', index);
+
+      if (item.icon) {
+        var span = document.createElement('span');
+        span.className = 'wlm-icon';
+        span.setAttribute('aria-hidden', 'true');
+        span.textContent = item.icon;
+        a.appendChild(span);
+      }
+
+      var text = document.createTextNode(item.label);
+      a.appendChild(text);
+
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        loadContent(item.url, a);
+      });
+
+      li.appendChild(a);
+      menuEl.appendChild(li);
+    });
+  }
+
+  function setActiveLink(linkEl) {
+    menuEl.querySelectorAll('a').forEach(function (a) {
+      a.classList.remove('active');
+      a.removeAttribute('aria-current');
+    });
+    linkEl.classList.add('active');
+    linkEl.setAttribute('aria-current', 'page');
+  }
+
+  function showLoader() {
+    loaderEl.classList.add('visible');
+  }
+
+  function hideLoader() {
+    loaderEl.classList.remove('visible');
+  }
+
+  function extractContent(html) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(html, 'text/html');
+
+    // Usuń niepotrzebne elementy z pobranego dokumentu
+    ['script', 'style', 'noscript', 'iframe[src*="ads"]'].forEach(function (sel) {
+      doc.querySelectorAll(sel).forEach(function (el) { el.remove(); });
+    });
+
+    // Szukaj głównej treści wg selektora
+    var selectors = contentSelector.split(',').map(function (s) { return s.trim(); });
+    for (var i = 0; i < selectors.length; i++) {
+      var found = doc.querySelector(selectors[i]);
+      if (found && found.innerHTML.trim().length > 50) {
+        return found.innerHTML;
+      }
+    }
+
+    // Fallback
+    var fallbacks = fallbackSelector.split(',').map(function (s) { return s.trim(); });
+    for (var j = 0; j < fallbacks.length; j++) {
+      var fb = doc.querySelector(fallbacks[j]);
+      if (fb && fb.innerHTML.trim().length > 50) {
+        return fb.innerHTML;
+      }
+    }
+
+    // Ostateczny fallback — cały body
+    var body = doc.querySelector('body');
+    return body ? body.innerHTML : '<p>Nie udało się pobrać treści.</p>';
+  }
+
+  function fixRelativeUrls(html, baseUrl) {
+    // Popraw względne linki obrazków i href
+    var base = window.location.origin;
+    return html
+      .replace(/src="\/([^"]*?)"/g, 'src="' + base + '/$1"')
+      .replace(/href="\/([^"]*?)"/g, 'href="' + base + '/$1"');
+  }
+
+  function loadContent(url, linkEl) {
+    setActiveLink(linkEl);
+    showLoader();
+    bodyEl.innerHTML = '';
+
+    fetch(url, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      credentials: 'same-origin'
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+        }
+        return response.text();
+      })
+      .then(function (html) {
+        var content = extractContent(html);
+        content = fixRelativeUrls(content, url);
+
+        var inner = document.createElement('div');
+        inner.className = 'wlm-content-inner';
+        inner.innerHTML = content;
+
+        // Otwieraj linki wewnętrzne w tym samym widoku, zewnętrzne w nowej karcie
+        inner.querySelectorAll('a[href]').forEach(function (a) {
+          var href = a.getAttribute('href');
+          if (href && href.startsWith('/')) {
+            a.addEventListener('click', function (e) {
+              var menuLink = menuEl.querySelector('a[data-url="' + href + '"]');
+              if (menuLink) {
+                e.preventDefault();
+                loadContent(href, menuLink);
+              }
+              // jeśli nie ma w menu — otwiera normalnie
+            });
+          } else if (href && !href.startsWith('#') && !href.startsWith(window.location.origin)) {
+            a.setAttribute('target', '_blank');
+            a.setAttribute('rel', 'noopener noreferrer');
+          }
+        });
+
+        bodyEl.appendChild(inner);
+        hideLoader();
+
+        // Scroll do góry treści
+        document.getElementById('wlm-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      })
+      .catch(function (err) {
+        var errDiv = document.createElement('div');
+        errDiv.className = 'wlm-error';
+        errDiv.innerHTML =
+          '<strong>Nie udało się wczytać treści.</strong><br>' +
+          'Adres: <code>' + url + '</code><br>' +
+          'Błąd: ' + err.message + '<br><br>' +
+          '<small>Upewnij się, że adres URL strony jest poprawny i strona istnieje.</small>';
+        bodyEl.appendChild(errDiv);
+        hideLoader();
+        console.error('[WLM] Błąd ładowania:', err);
+      });
+  }
+
+  // Inicjalizacja
+  buildMenu();
+
+  // Opcjonalnie: wczytaj pierwszą stronę automatycznie po załadowaniu
+  // Odkomentuj poniższe linie, aby automatycznie wyświetlić pierwszą pozycję menu:
+  // var firstLink = menuEl.querySelector('a');
+  // if (firstLink) loadContent(menuItems[0].url, firstLink);
+
+})();
+</script>
