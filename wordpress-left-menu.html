@@ -2,10 +2,7 @@
   WORDPRESS LEFT MENU NAVIGATION
   ================================
   Wklej w bloku "HTML niestandardowy" w WordPress.
-
-  KONFIGURACJA:
-  1. Zmień href="" i tekst w <li> na swoje adresy/nazwy
-  2. Zmień contentSelectors w <script> jeśli treść się nie wczytuje
+  Zmień href i tekst w <li> na swoje strony.
 -->
 
 <style>
@@ -15,7 +12,6 @@
 #wlm-wrapper *::after {
   box-sizing: border-box !important;
 }
-
 #wlm-wrapper {
   display: flex !important;
   flex-direction: row !important;
@@ -31,7 +27,6 @@
   background: #fff !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
-
 #wlm-sidebar {
   width: 260px !important;
   min-width: 260px !important;
@@ -43,7 +38,6 @@
   padding: 0 !important;
   margin: 0 !important;
 }
-
 #wlm-sidebar-title {
   padding: 18px 20px 14px !important;
   font-size: 12px !important;
@@ -55,27 +49,23 @@
   margin: 0 !important;
   line-height: 1.2 !important;
 }
-
 #wlm-menu {
   list-style: none !important;
   margin: 0 !important;
   padding: 8px 0 !important;
   flex: 1 !important;
 }
-
 #wlm-menu li {
   list-style: none !important;
   margin: 0 !important;
   padding: 0 !important;
   border: none !important;
 }
-
 #wlm-menu li::before,
 #wlm-menu li::after {
   display: none !important;
   content: none !important;
 }
-
 #wlm-menu a {
   display: flex !important;
   align-items: center !important;
@@ -95,21 +85,18 @@
   width: 100% !important;
   transition: background 0.18s !important;
 }
-
 #wlm-menu a:hover {
   background: #2a5080 !important;
   color: #fff !important;
   text-decoration: none !important;
   border-left-color: rgba(255,255,255,0.4) !important;
 }
-
 #wlm-menu a.wlm-active {
   background: #e8f4fd !important;
   color: #1a3a5c !important;
   border-left-color: #2980b9 !important;
   font-weight: 600 !important;
 }
-
 #wlm-content {
   flex: 1 !important;
   min-width: 0 !important;
@@ -118,16 +105,13 @@
   position: relative !important;
   display: block !important;
 }
-
 #wlm-content-inner {
   padding: 28px 32px !important;
 }
-
 #wlm-content-inner img {
   max-width: 100% !important;
   height: auto !important;
 }
-
 #wlm-loader {
   display: none;
   position: absolute !important;
@@ -140,11 +124,7 @@
   flex-direction: column !important;
   gap: 14px !important;
 }
-
-#wlm-loader.wlm-on {
-  display: flex !important;
-}
-
+#wlm-loader.wlm-on { display: flex !important; }
 .wlm-spinner {
   width: 40px !important;
   height: 40px !important;
@@ -153,9 +133,7 @@
   border-radius: 50% !important;
   animation: wlmSpin 0.7s linear infinite !important;
 }
-
 @keyframes wlmSpin { to { transform: rotate(360deg); } }
-
 #wlm-placeholder {
   display: flex !important;
   flex-direction: column !important;
@@ -166,13 +144,11 @@
   text-align: center !important;
   padding: 40px !important;
 }
-
 #wlm-placeholder p {
   font-size: 15px !important;
   color: #bbb !important;
   margin: 10px 0 0 0 !important;
 }
-
 .wlm-error {
   padding: 24px !important;
   color: #c0392b !important;
@@ -183,7 +159,6 @@
   font-size: 14px !important;
   line-height: 1.6 !important;
 }
-
 @media (max-width: 700px) {
   #wlm-wrapper { flex-direction: column !important; }
   #wlm-sidebar { width: 100% !important; min-width: unset !important; max-width: 100% !important; }
@@ -194,21 +169,94 @@
 }
 </style>
 
+<script type="text/javascript">
+function wlmLoad(url, el) {
+  var bodyEl   = document.getElementById('wlm-body');
+  var loaderEl = document.getElementById('wlm-loader');
+
+  /* Aktywny link */
+  document.querySelectorAll('#wlm-menu a').forEach(function(a) {
+    a.classList.remove('wlm-active');
+  });
+  el.classList.add('wlm-active');
+
+  /* Pokaż loader */
+  loaderEl.classList.add('wlm-on');
+  bodyEl.innerHTML = '';
+
+  fetch(url, { credentials: 'same-origin' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function(html) {
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(html, 'text/html');
+
+      /* Usuń header/footer/nav ze źródła */
+      ['header','footer','nav','aside','.site-header','.site-footer',
+       '.main-navigation','#masthead','#colophon','.widget-area',
+       '.nav-links','.post-navigation'].forEach(function(s) {
+        doc.querySelectorAll(s).forEach(function(node) { node.remove(); });
+      });
+
+      /* Znajdź treść — testujemy kolejno */
+      var selectors = [
+        '.entry-content','.post-content','.page-content',
+        '.elementor-section-wrap','.wp-block-post-content',
+        'article .content','main','article','#content','#main','.site-main'
+      ];
+      var content = '';
+      for (var i = 0; i < selectors.length; i++) {
+        var found = doc.querySelector(selectors[i]);
+        if (found && found.innerHTML.trim().length > 30) {
+          content = found.innerHTML;
+          break;
+        }
+      }
+      if (!content) {
+        var body = doc.querySelector('body');
+        content = body ? body.innerHTML : '<p>Brak treści.</p>';
+      }
+
+      /* Popraw względne URL-e obrazków/linków */
+      var origin = window.location.origin;
+      content = content
+        .replace(/(\ssrc=["'])\/(?!\/)/g, '$1' + origin + '/')
+        .replace(/(\shref=["'])\/(?!\/)/g, '$1' + origin + '/');
+
+      var div = document.createElement('div');
+      div.id = 'wlm-content-inner';
+      div.innerHTML = content;
+      bodyEl.appendChild(div);
+      loaderEl.classList.remove('wlm-on');
+      document.getElementById('wlm-wrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    })
+    .catch(function(err) {
+      var e = document.createElement('div');
+      e.className = 'wlm-error';
+      e.innerHTML = '<strong>Nie udało się wczytać treści.</strong><br>'
+        + 'URL: <code>' + url + '</code><br>Błąd: ' + err.message + '<br><br>'
+        + '<small>Sprawdź czy podany URL istnieje na stronie.</small>';
+      bodyEl.appendChild(e);
+      loaderEl.classList.remove('wlm-on');
+      console.error('[WLM]', err);
+    });
+}
+</script>
+
 <div id="wlm-wrapper">
 
   <nav id="wlm-sidebar" role="navigation" aria-label="Menu">
     <div id="wlm-sidebar-title">Menu</div>
     <ul id="wlm-menu">
 
-      <!-- ============================================================
-           POZYCJE MENU — zmień href i tekst na swoje strony
-           ============================================================ -->
-
-      <li><a href="/oferta-kursow/" data-wlm>📋 Oferta kursów</a></li>
-      <li><a href="/harmonogram-zajec/" data-wlm>📅 Harmonogram zajęć</a></li>
-      <li><a href="/rekrutacja/" data-wlm>📝 Rekrutacja</a></li>
-      <li><a href="/cennik/" data-wlm>💳 Cennik</a></li>
-      <li><a href="/kontakt/" data-wlm>📞 Kontakt</a></li>
+      <!-- Zmień href i tekst na swoje strony -->
+      <li><a href="/oferta-kursow/"     onclick="wlmLoad(this.href,this);return false;">📋 Oferta kursów</a></li>
+      <li><a href="/harmonogram-zajec/" onclick="wlmLoad(this.href,this);return false;">📅 Harmonogram zajęć</a></li>
+      <li><a href="/rekrutacja/"        onclick="wlmLoad(this.href,this);return false;">📝 Rekrutacja</a></li>
+      <li><a href="/cennik/"            onclick="wlmLoad(this.href,this);return false;">💳 Cennik</a></li>
+      <li><a href="/kontakt/"           onclick="wlmLoad(this.href,this);return false;">📞 Kontakt</a></li>
 
     </ul>
   </nav>
@@ -232,91 +280,3 @@
   </div>
 
 </div>
-
-<script type="text/javascript">
-(function () {
-
-  /* Selektory treści — kolejność ma znaczenie, używany jest pierwszy pasujący */
-  var contentSelectors = [
-    '.entry-content',
-    '.post-content',
-    '.page-content',
-    '.elementor-section-wrap',
-    'article .content',
-    'main',
-    'article',
-    '#content',
-    '#main',
-    '.site-main'
-  ];
-
-  var bodyEl   = document.getElementById('wlm-body');
-  var loaderEl = document.getElementById('wlm-loader');
-  var links    = document.querySelectorAll('#wlm-menu a[data-wlm]');
-
-  function setActive(el) {
-    links.forEach(function(a) { a.classList.remove('wlm-active'); });
-    el.classList.add('wlm-active');
-  }
-
-  function extractContent(html) {
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(html, 'text/html');
-    ['header','footer','nav','aside','.site-header','.site-footer',
-     '.main-navigation','#masthead','#colophon','.widget-area'].forEach(function(s){
-      doc.querySelectorAll(s).forEach(function(el){ el.remove(); });
-    });
-    for (var i = 0; i < contentSelectors.length; i++) {
-      var el = doc.querySelector(contentSelectors[i]);
-      if (el && el.innerHTML.trim().length > 30) return el.innerHTML;
-    }
-    var body = doc.querySelector('body');
-    return body ? body.innerHTML : '<p>Brak treści.</p>';
-  }
-
-  function fixUrls(html) {
-    var o = window.location.origin;
-    return html
-      .replace(/(\ssrc=["'])\/(?!\/)/g, '$1' + o + '/')
-      .replace(/(\shref=["'])\/(?!\/)/g, '$1' + o + '/');
-  }
-
-  function loadPage(url, linkEl) {
-    setActive(linkEl);
-    loaderEl.classList.add('wlm-on');
-    bodyEl.innerHTML = '';
-
-    fetch(url, { credentials: 'same-origin' })
-      .then(function(r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
-      })
-      .then(function(html) {
-        var div = document.createElement('div');
-        div.id = 'wlm-content-inner';
-        div.innerHTML = fixUrls(extractContent(html));
-        bodyEl.appendChild(div);
-        loaderEl.classList.remove('wlm-on');
-        document.getElementById('wlm-wrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      })
-      .catch(function(err) {
-        var e = document.createElement('div');
-        e.className = 'wlm-error';
-        e.innerHTML = '<strong>Nie udało się wczytać treści.</strong><br>'
-          + 'URL: <code>' + url + '</code><br>Błąd: ' + err.message + '<br><br>'
-          + '<small>Sprawdź czy podany URL istnieje na stronie.</small>';
-        bodyEl.appendChild(e);
-        loaderEl.classList.remove('wlm-on');
-        console.error('[WLM]', err);
-      });
-  }
-
-  links.forEach(function(a) {
-    a.addEventListener('click', function(e) {
-      e.preventDefault();
-      loadPage(a.getAttribute('href'), a);
-    });
-  });
-
-})();
-</script>
