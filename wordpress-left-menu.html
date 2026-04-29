@@ -9,155 +9,68 @@
 #wlm-wrapper,
 #wlm-wrapper *,
 #wlm-wrapper *::before,
-#wlm-wrapper *::after {
-  box-sizing: border-box !important;
-}
+#wlm-wrapper *::after { box-sizing: border-box !important; }
 #wlm-wrapper {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: nowrap !important;
-  min-height: 520px !important;
-  width: 100% !important;
-  border: 1px solid #d0dce8 !important;
-  border-radius: 6px !important;
-  overflow: hidden !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.10) !important;
-  margin: 0 0 24px 0 !important;
-  padding: 0 !important;
-  background: #fff !important;
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important;
+  min-height: 520px !important; width: 100% !important;
+  border: 1px solid #d0dce8 !important; border-radius: 6px !important;
+  overflow: hidden !important; box-shadow: 0 2px 12px rgba(0,0,0,0.10) !important;
+  margin: 0 0 24px 0 !important; padding: 0 !important; background: #fff !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 #wlm-sidebar {
-  width: 260px !important;
-  min-width: 260px !important;
-  max-width: 260px !important;
-  background: #1a3a5c !important;
-  display: flex !important;
-  flex-direction: column !important;
-  flex-shrink: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
+  width: 260px !important; min-width: 260px !important; max-width: 260px !important;
+  background: #1a3a5c !important; display: flex !important; flex-direction: column !important;
+  flex-shrink: 0 !important; padding: 0 !important; margin: 0 !important;
 }
 #wlm-sidebar-title {
-  padding: 18px 20px 14px !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  color: rgba(255,255,255,0.55) !important;
-  border-bottom: 1px solid rgba(255,255,255,0.10) !important;
-  margin: 0 !important;
-  line-height: 1.2 !important;
+  padding: 18px 20px 14px !important; font-size: 12px !important; font-weight: 700 !important;
+  letter-spacing: 0.08em !important; text-transform: uppercase !important;
+  color: rgba(255,255,255,0.55) !important; border-bottom: 1px solid rgba(255,255,255,0.10) !important;
+  margin: 0 !important; line-height: 1.2 !important;
 }
-#wlm-menu {
-  list-style: none !important;
-  margin: 0 !important;
-  padding: 8px 0 !important;
-  flex: 1 !important;
-}
-#wlm-menu li {
-  list-style: none !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-}
-#wlm-menu li::before,
-#wlm-menu li::after {
-  display: none !important;
-  content: none !important;
-}
+#wlm-menu { list-style: none !important; margin: 0 !important; padding: 8px 0 !important; flex: 1 !important; }
+#wlm-menu li { list-style: none !important; margin: 0 !important; padding: 0 !important; border: none !important; }
+#wlm-menu li::before, #wlm-menu li::after { display: none !important; content: none !important; }
 #wlm-menu a {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  padding: 13px 20px !important;
-  color: #ffffff !important;
-  text-decoration: none !important;
-  font-size: 15px !important;
-  font-weight: 400 !important;
-  border-left: 3px solid transparent !important;
-  border-right: none !important;
-  border-top: none !important;
-  border-bottom: none !important;
-  background: transparent !important;
-  cursor: pointer !important;
-  line-height: 1.3 !important;
-  width: 100% !important;
-  transition: background 0.18s !important;
+  display: flex !important; align-items: center !important; gap: 10px !important;
+  padding: 13px 20px !important; color: #ffffff !important; text-decoration: none !important;
+  font-size: 15px !important; font-weight: 400 !important;
+  border-left: 3px solid transparent !important; border-right: none !important;
+  border-top: none !important; border-bottom: none !important;
+  background: transparent !important; cursor: pointer !important;
+  line-height: 1.3 !important; width: 100% !important; transition: background 0.18s !important;
 }
-#wlm-menu a:hover {
-  background: #2a5080 !important;
-  color: #fff !important;
-  text-decoration: none !important;
-  border-left-color: rgba(255,255,255,0.4) !important;
-}
-#wlm-menu a.wlm-active {
-  background: #e8f4fd !important;
-  color: #1a3a5c !important;
-  border-left-color: #2980b9 !important;
-  font-weight: 600 !important;
-}
-#wlm-content {
-  flex: 1 !important;
-  min-width: 0 !important;
-  background: #fff !important;
-  overflow: auto !important;
-  position: relative !important;
-  display: block !important;
-}
-#wlm-content-inner {
-  padding: 28px 32px !important;
-}
-#wlm-content-inner img {
-  max-width: 100% !important;
-  height: auto !important;
-}
+#wlm-menu a:hover { background: #2a5080 !important; color: #fff !important; text-decoration: none !important; border-left-color: rgba(255,255,255,0.4) !important; }
+#wlm-menu a.wlm-active { background: #e8f4fd !important; color: #1a3a5c !important; border-left-color: #2980b9 !important; font-weight: 600 !important; }
+#wlm-content { flex: 1 !important; min-width: 0 !important; background: #fff !important; overflow: auto !important; position: relative !important; display: block !important; }
+#wlm-content-inner { padding: 28px 32px !important; }
+#wlm-content-inner img { max-width: 100% !important; height: auto !important; }
 #wlm-loader {
-  display: none;
-  position: absolute !important;
-  top: 0 !important; right: 0 !important;
-  bottom: 0 !important; left: 0 !important;
-  background: rgba(255,255,255,0.88) !important;
-  z-index: 100 !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-direction: column !important;
-  gap: 14px !important;
+  display: none; position: absolute !important;
+  top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important;
+  background: rgba(255,255,255,0.88) !important; z-index: 100 !important;
+  align-items: center !important; justify-content: center !important;
+  flex-direction: column !important; gap: 14px !important;
 }
 #wlm-loader.wlm-on { display: flex !important; }
 .wlm-spinner {
-  width: 40px !important;
-  height: 40px !important;
-  border: 4px solid #d0dce8 !important;
-  border-top-color: #2980b9 !important;
-  border-radius: 50% !important;
-  animation: wlmSpin 0.7s linear infinite !important;
+  width: 40px !important; height: 40px !important;
+  border: 4px solid #d0dce8 !important; border-top-color: #2980b9 !important;
+  border-radius: 50% !important; animation: wlmSpin 0.7s linear infinite !important;
 }
 @keyframes wlmSpin { to { transform: rotate(360deg); } }
 #wlm-placeholder {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-height: 320px !important;
-  color: #bbb !important;
-  text-align: center !important;
-  padding: 40px !important;
+  display: flex !important; flex-direction: column !important;
+  align-items: center !important; justify-content: center !important;
+  min-height: 320px !important; color: #bbb !important;
+  text-align: center !important; padding: 40px !important;
 }
-#wlm-placeholder p {
-  font-size: 15px !important;
-  color: #bbb !important;
-  margin: 10px 0 0 0 !important;
-}
+#wlm-placeholder p { font-size: 15px !important; color: #bbb !important; margin: 10px 0 0 0 !important; }
 .wlm-error {
-  padding: 24px !important;
-  color: #c0392b !important;
-  background: #fdf3f2 !important;
-  border: 1px solid #f5c6c3 !important;
-  border-radius: 6px !important;
-  margin: 20px !important;
-  font-size: 14px !important;
-  line-height: 1.6 !important;
+  padding: 24px !important; color: #c0392b !important; background: #fdf3f2 !important;
+  border: 1px solid #f5c6c3 !important; border-radius: 6px !important;
+  margin: 20px !important; font-size: 14px !important; line-height: 1.6 !important;
 }
 @media (max-width: 700px) {
   #wlm-wrapper { flex-direction: column !important; }
@@ -169,94 +82,27 @@
 }
 </style>
 
-<script type="text/javascript">
-function wlmLoad(url, el) {
-  var bodyEl   = document.getElementById('wlm-body');
-  var loaderEl = document.getElementById('wlm-loader');
-
-  /* Aktywny link */
-  document.querySelectorAll('#wlm-menu a').forEach(function(a) {
-    a.classList.remove('wlm-active');
-  });
-  el.classList.add('wlm-active');
-
-  /* Pokaż loader */
-  loaderEl.classList.add('wlm-on');
-  bodyEl.innerHTML = '';
-
-  fetch(url, { credentials: 'same-origin' })
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.text();
-    })
-    .then(function(html) {
-      var parser = new DOMParser();
-      var doc = parser.parseFromString(html, 'text/html');
-
-      /* Usuń header/footer/nav ze źródła */
-      ['header','footer','nav','aside','.site-header','.site-footer',
-       '.main-navigation','#masthead','#colophon','.widget-area',
-       '.nav-links','.post-navigation'].forEach(function(s) {
-        doc.querySelectorAll(s).forEach(function(node) { node.remove(); });
-      });
-
-      /* Znajdź treść — testujemy kolejno */
-      var selectors = [
-        '.entry-content','.post-content','.page-content',
-        '.elementor-section-wrap','.wp-block-post-content',
-        'article .content','main','article','#content','#main','.site-main'
-      ];
-      var content = '';
-      for (var i = 0; i < selectors.length; i++) {
-        var found = doc.querySelector(selectors[i]);
-        if (found && found.innerHTML.trim().length > 30) {
-          content = found.innerHTML;
-          break;
-        }
-      }
-      if (!content) {
-        var body = doc.querySelector('body');
-        content = body ? body.innerHTML : '<p>Brak treści.</p>';
-      }
-
-      /* Popraw względne URL-e obrazków/linków */
-      var origin = window.location.origin;
-      content = content
-        .replace(/(\ssrc=["'])\/(?!\/)/g, '$1' + origin + '/')
-        .replace(/(\shref=["'])\/(?!\/)/g, '$1' + origin + '/');
-
-      var div = document.createElement('div');
-      div.id = 'wlm-content-inner';
-      div.innerHTML = content;
-      bodyEl.appendChild(div);
-      loaderEl.classList.remove('wlm-on');
-      document.getElementById('wlm-wrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    })
-    .catch(function(err) {
-      var e = document.createElement('div');
-      e.className = 'wlm-error';
-      e.innerHTML = '<strong>Nie udało się wczytać treści.</strong><br>'
-        + 'URL: <code>' + url + '</code><br>Błąd: ' + err.message + '<br><br>'
-        + '<small>Sprawdź czy podany URL istnieje na stronie.</small>';
-      bodyEl.appendChild(e);
-      loaderEl.classList.remove('wlm-on');
-      console.error('[WLM]', err);
-    });
-}
-</script>
-
 <div id="wlm-wrapper">
 
   <nav id="wlm-sidebar" role="navigation" aria-label="Menu">
     <div id="wlm-sidebar-title">Menu</div>
     <ul id="wlm-menu">
 
-      <!-- Zmień href i tekst na swoje strony -->
-      <li><a href="/oferta-kursow/"     onclick="wlmLoad(this.href,this);return false;">📋 Oferta kursów</a></li>
-      <li><a href="/harmonogram-zajec/" onclick="wlmLoad(this.href,this);return false;">📅 Harmonogram zajęć</a></li>
-      <li><a href="/rekrutacja/"        onclick="wlmLoad(this.href,this);return false;">📝 Rekrutacja</a></li>
-      <li><a href="/cennik/"            onclick="wlmLoad(this.href,this);return false;">💳 Cennik</a></li>
-      <li><a href="/kontakt/"           onclick="wlmLoad(this.href,this);return false;">📞 Kontakt</a></li>
+      <!-- ============================================================
+           POZYCJE MENU
+           Zmień href="/twoja-strona/" i tekst na swoje podstrony.
+           Atrybut onclick — nie usuwaj, tam jest cała logika.
+           ============================================================ -->
+
+      <li><a href="/oferta-kursow/" onclick="if(!window._wlm){window._wlm=function(url,el){var B=document.getElementById('wlm-body'),L=document.getElementById('wlm-loader');document.querySelectorAll('#wlm-menu a').forEach(function(a){a.classList.remove('wlm-active')});el.classList.add('wlm-active');L.classList.add('wlm-on');B.innerHTML='';fetch(url,{credentials:'same-origin'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(h){var p=new DOMParser(),d=p.parseFromString(h,'text/html');['header','footer','nav','aside','.site-header','.site-footer','.main-navigation','#masthead','#colophon','.widget-area'].forEach(function(s){d.querySelectorAll(s).forEach(function(n){n.remove()})});var ss=['.entry-content','.post-content','.page-content','.elementor-section-wrap','.wp-block-post-content','main','article','#content','#main','.site-main'],c='';for(var i=0;i<ss.length;i++){var f=d.querySelector(ss[i]);if(f&&f.innerHTML.trim().length>30){c=f.innerHTML;break}}if(!c){var b=d.querySelector('body');c=b?b.innerHTML:'<p>Brak treści.</p>'}var o=window.location.origin;c=c.replace(/(\ssrc=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/').replace(/(\shref=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/');var dv=document.createElement('div');dv.id='wlm-content-inner';dv.innerHTML=c;B.appendChild(dv);L.classList.remove('wlm-on');document.getElementById('wlm-wrapper').scrollIntoView({behavior:'smooth',block:'nearest'})}).catch(function(e){var er=document.createElement('div');er.className='wlm-error';er.innerHTML='<strong>Błąd ładowania.</strong><br>URL: <code>'+url+'</code><br>'+e.message;B.appendChild(er);L.classList.remove('wlm-on')})}}window._wlm(this.href,this);return false;">📋 Oferta kursów</a></li>
+
+      <li><a href="/harmonogram-zajec/" onclick="if(!window._wlm){window._wlm=function(url,el){var B=document.getElementById('wlm-body'),L=document.getElementById('wlm-loader');document.querySelectorAll('#wlm-menu a').forEach(function(a){a.classList.remove('wlm-active')});el.classList.add('wlm-active');L.classList.add('wlm-on');B.innerHTML='';fetch(url,{credentials:'same-origin'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(h){var p=new DOMParser(),d=p.parseFromString(h,'text/html');['header','footer','nav','aside','.site-header','.site-footer','.main-navigation','#masthead','#colophon','.widget-area'].forEach(function(s){d.querySelectorAll(s).forEach(function(n){n.remove()})});var ss=['.entry-content','.post-content','.page-content','.elementor-section-wrap','.wp-block-post-content','main','article','#content','#main','.site-main'],c='';for(var i=0;i<ss.length;i++){var f=d.querySelector(ss[i]);if(f&&f.innerHTML.trim().length>30){c=f.innerHTML;break}}if(!c){var b=d.querySelector('body');c=b?b.innerHTML:'<p>Brak treści.</p>'}var o=window.location.origin;c=c.replace(/(\ssrc=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/').replace(/(\shref=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/');var dv=document.createElement('div');dv.id='wlm-content-inner';dv.innerHTML=c;B.appendChild(dv);L.classList.remove('wlm-on');document.getElementById('wlm-wrapper').scrollIntoView({behavior:'smooth',block:'nearest'})}).catch(function(e){var er=document.createElement('div');er.className='wlm-error';er.innerHTML='<strong>Błąd ładowania.</strong><br>URL: <code>'+url+'</code><br>'+e.message;B.appendChild(er);L.classList.remove('wlm-on')})}}window._wlm(this.href,this);return false;">📅 Harmonogram zajęć</a></li>
+
+      <li><a href="/rekrutacja/" onclick="if(!window._wlm){window._wlm=function(url,el){var B=document.getElementById('wlm-body'),L=document.getElementById('wlm-loader');document.querySelectorAll('#wlm-menu a').forEach(function(a){a.classList.remove('wlm-active')});el.classList.add('wlm-active');L.classList.add('wlm-on');B.innerHTML='';fetch(url,{credentials:'same-origin'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(h){var p=new DOMParser(),d=p.parseFromString(h,'text/html');['header','footer','nav','aside','.site-header','.site-footer','.main-navigation','#masthead','#colophon','.widget-area'].forEach(function(s){d.querySelectorAll(s).forEach(function(n){n.remove()})});var ss=['.entry-content','.post-content','.page-content','.elementor-section-wrap','.wp-block-post-content','main','article','#content','#main','.site-main'],c='';for(var i=0;i<ss.length;i++){var f=d.querySelector(ss[i]);if(f&&f.innerHTML.trim().length>30){c=f.innerHTML;break}}if(!c){var b=d.querySelector('body');c=b?b.innerHTML:'<p>Brak treści.</p>'}var o=window.location.origin;c=c.replace(/(\ssrc=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/').replace(/(\shref=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/');var dv=document.createElement('div');dv.id='wlm-content-inner';dv.innerHTML=c;B.appendChild(dv);L.classList.remove('wlm-on');document.getElementById('wlm-wrapper').scrollIntoView({behavior:'smooth',block:'nearest'})}).catch(function(e){var er=document.createElement('div');er.className='wlm-error';er.innerHTML='<strong>Błąd ładowania.</strong><br>URL: <code>'+url+'</code><br>'+e.message;B.appendChild(er);L.classList.remove('wlm-on')})}}window._wlm(this.href,this);return false;">📝 Rekrutacja</a></li>
+
+      <li><a href="/cennik/" onclick="if(!window._wlm){window._wlm=function(url,el){var B=document.getElementById('wlm-body'),L=document.getElementById('wlm-loader');document.querySelectorAll('#wlm-menu a').forEach(function(a){a.classList.remove('wlm-active')});el.classList.add('wlm-active');L.classList.add('wlm-on');B.innerHTML='';fetch(url,{credentials:'same-origin'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(h){var p=new DOMParser(),d=p.parseFromString(h,'text/html');['header','footer','nav','aside','.site-header','.site-footer','.main-navigation','#masthead','#colophon','.widget-area'].forEach(function(s){d.querySelectorAll(s).forEach(function(n){n.remove()})});var ss=['.entry-content','.post-content','.page-content','.elementor-section-wrap','.wp-block-post-content','main','article','#content','#main','.site-main'],c='';for(var i=0;i<ss.length;i++){var f=d.querySelector(ss[i]);if(f&&f.innerHTML.trim().length>30){c=f.innerHTML;break}}if(!c){var b=d.querySelector('body');c=b?b.innerHTML:'<p>Brak treści.</p>'}var o=window.location.origin;c=c.replace(/(\ssrc=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/').replace(/(\shref=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/');var dv=document.createElement('div');dv.id='wlm-content-inner';dv.innerHTML=c;B.appendChild(dv);L.classList.remove('wlm-on');document.getElementById('wlm-wrapper').scrollIntoView({behavior:'smooth',block:'nearest'})}).catch(function(e){var er=document.createElement('div');er.className='wlm-error';er.innerHTML='<strong>Błąd ładowania.</strong><br>URL: <code>'+url+'</code><br>'+e.message;B.appendChild(er);L.classList.remove('wlm-on')})}}window._wlm(this.href,this);return false;">💳 Cennik</a></li>
+
+      <li><a href="/kontakt/" onclick="if(!window._wlm){window._wlm=function(url,el){var B=document.getElementById('wlm-body'),L=document.getElementById('wlm-loader');document.querySelectorAll('#wlm-menu a').forEach(function(a){a.classList.remove('wlm-active')});el.classList.add('wlm-active');L.classList.add('wlm-on');B.innerHTML='';fetch(url,{credentials:'same-origin'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(function(h){var p=new DOMParser(),d=p.parseFromString(h,'text/html');['header','footer','nav','aside','.site-header','.site-footer','.main-navigation','#masthead','#colophon','.widget-area'].forEach(function(s){d.querySelectorAll(s).forEach(function(n){n.remove()})});var ss=['.entry-content','.post-content','.page-content','.elementor-section-wrap','.wp-block-post-content','main','article','#content','#main','.site-main'],c='';for(var i=0;i<ss.length;i++){var f=d.querySelector(ss[i]);if(f&&f.innerHTML.trim().length>30){c=f.innerHTML;break}}if(!c){var b=d.querySelector('body');c=b?b.innerHTML:'<p>Brak treści.</p>'}var o=window.location.origin;c=c.replace(/(\ssrc=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/').replace(/(\shref=[&quot;&#39;])\/(?!\/)/g,'$1'+o+'/');var dv=document.createElement('div');dv.id='wlm-content-inner';dv.innerHTML=c;B.appendChild(dv);L.classList.remove('wlm-on');document.getElementById('wlm-wrapper').scrollIntoView({behavior:'smooth',block:'nearest'})}).catch(function(e){var er=document.createElement('div');er.className='wlm-error';er.innerHTML='<strong>Błąd ładowania.</strong><br>URL: <code>'+url+'</code><br>'+e.message;B.appendChild(er);L.classList.remove('wlm-on')})}}window._wlm(this.href,this);return false;">📞 Kontakt</a></li>
 
     </ul>
   </nav>
