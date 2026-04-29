@@ -1,12 +1,14 @@
 <!--
   WORDPRESS LEFT MENU NAVIGATION
   ================================
-  Wklej ten kod w edytorze WordPress (blok "HTML niestandardowy").
-  KONFIGURACJA: zmień menuItems i contentSelector poniżej w sekcji <script>.
+  Wklej w bloku "HTML niestandardowy" w WordPress.
+
+  KONFIGURACJA:
+  1. Zmień href="" i tekst w <li> na swoje adresy/nazwy
+  2. Zmień contentSelectors w <script> jeśli treść się nie wczytuje
 -->
 
 <style>
-/* Reset agresywny — nadpisuje style motywu WordPress */
 #wlm-wrapper,
 #wlm-wrapper *,
 #wlm-wrapper *::before,
@@ -18,10 +20,8 @@
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
-  gap: 0 !important;
   min-height: 520px !important;
   width: 100% !important;
-  max-width: 100% !important;
   border: 1px solid #d0dce8 !important;
   border-radius: 6px !important;
   overflow: hidden !important;
@@ -32,7 +32,6 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
-/* ---- SIDEBAR ---- */
 #wlm-sidebar {
   width: 260px !important;
   min-width: 260px !important;
@@ -91,17 +90,17 @@
   border-top: none !important;
   border-bottom: none !important;
   background: transparent !important;
-  transition: background 0.18s, border-color 0.18s !important;
   cursor: pointer !important;
   line-height: 1.3 !important;
   width: 100% !important;
+  transition: background 0.18s !important;
 }
 
 #wlm-menu a:hover {
   background: #2a5080 !important;
-  border-left-color: rgba(255,255,255,0.4) !important;
   color: #fff !important;
   text-decoration: none !important;
+  border-left-color: rgba(255,255,255,0.4) !important;
 }
 
 #wlm-menu a.wlm-active {
@@ -111,18 +110,10 @@
   font-weight: 600 !important;
 }
 
-#wlm-menu a .wlm-icon {
-  flex-shrink: 0 !important;
-  font-style: normal !important;
-  font-size: 16px !important;
-  line-height: 1 !important;
-}
-
-/* ---- CONTENT AREA ---- */
 #wlm-content {
   flex: 1 !important;
   min-width: 0 !important;
-  background: #ffffff !important;
+  background: #fff !important;
   overflow: auto !important;
   position: relative !important;
   display: block !important;
@@ -137,7 +128,6 @@
   height: auto !important;
 }
 
-/* ---- LOADER ---- */
 #wlm-loader {
   display: none;
   position: absolute !important;
@@ -151,7 +141,7 @@
   gap: 14px !important;
 }
 
-#wlm-loader.wlm-visible {
+#wlm-loader.wlm-on {
   display: flex !important;
 }
 
@@ -164,11 +154,8 @@
   animation: wlmSpin 0.7s linear infinite !important;
 }
 
-@keyframes wlmSpin {
-  to { transform: rotate(360deg); }
-}
+@keyframes wlmSpin { to { transform: rotate(360deg); } }
 
-/* ---- PLACEHOLDER ---- */
 #wlm-placeholder {
   display: flex !important;
   flex-direction: column !important;
@@ -186,7 +173,6 @@
   margin: 10px 0 0 0 !important;
 }
 
-/* ---- ERROR ---- */
 .wlm-error {
   padding: 24px !important;
   color: #c0392b !important;
@@ -198,37 +184,13 @@
   line-height: 1.6 !important;
 }
 
-/* ---- RESPONSIVE ---- */
 @media (max-width: 700px) {
-  #wlm-wrapper {
-    flex-direction: column !important;
-  }
-  #wlm-sidebar {
-    width: 100% !important;
-    min-width: unset !important;
-    max-width: 100% !important;
-  }
-  #wlm-menu {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    padding: 6px !important;
-    gap: 4px !important;
-  }
-  #wlm-menu a {
-    padding: 10px 14px !important;
-    border-left: none !important;
-    border-bottom: 3px solid transparent !important;
-    border-radius: 4px !important;
-    font-size: 13px !important;
-    width: auto !important;
-  }
-  #wlm-menu a.wlm-active {
-    border-left-color: transparent !important;
-    border-bottom-color: #2980b9 !important;
-  }
-  #wlm-content-inner {
-    padding: 18px !important;
-  }
+  #wlm-wrapper { flex-direction: column !important; }
+  #wlm-sidebar { width: 100% !important; min-width: unset !important; max-width: 100% !important; }
+  #wlm-menu { display: flex !important; flex-wrap: wrap !important; padding: 6px !important; gap: 4px !important; }
+  #wlm-menu a { padding: 10px 14px !important; border-left: none !important; border-bottom: 3px solid transparent !important; border-radius: 4px !important; font-size: 13px !important; width: auto !important; }
+  #wlm-menu a.wlm-active { border-left-color: transparent !important; border-bottom-color: #2980b9 !important; }
+  #wlm-content-inner { padding: 18px !important; }
 }
 </style>
 
@@ -236,11 +198,23 @@
 
   <nav id="wlm-sidebar" role="navigation" aria-label="Menu">
     <div id="wlm-sidebar-title">Menu</div>
-    <ul id="wlm-menu"></ul>
+    <ul id="wlm-menu">
+
+      <!-- ============================================================
+           POZYCJE MENU — zmień href i tekst na swoje strony
+           ============================================================ -->
+
+      <li><a href="/oferta-kursow/" data-wlm>📋 Oferta kursów</a></li>
+      <li><a href="/harmonogram-zajec/" data-wlm>📅 Harmonogram zajęć</a></li>
+      <li><a href="/rekrutacja/" data-wlm>📝 Rekrutacja</a></li>
+      <li><a href="/cennik/" data-wlm>💳 Cennik</a></li>
+      <li><a href="/kontakt/" data-wlm>📞 Kontakt</a></li>
+
+    </ul>
   </nav>
 
   <div id="wlm-content">
-    <div id="wlm-loader" aria-live="polite">
+    <div id="wlm-loader">
       <div class="wlm-spinner"></div>
       <span style="color:#666;font-size:14px;">Wczytywanie...</span>
     </div>
@@ -259,33 +233,16 @@
 
 </div>
 
-<script>
+<script type="text/javascript">
 (function () {
-  'use strict';
 
-  /* ================================================================
-     KONFIGURACJA — zmień na swoje dane
-     ================================================================ */
-
-  var menuItems = [
-    { label: 'Oferta kursów',     url: '/oferta-kursow/',     icon: '📋' },
-    { label: 'Harmonogram zajęć', url: '/harmonogram-zajec/', icon: '📅' },
-    { label: 'Rekrutacja',        url: '/rekrutacja/',        icon: '📝' },
-    { label: 'Cennik',            url: '/cennik/',            icon: '💳' },
-    { label: 'Kontakt',           url: '/kontakt/',           icon: '📞' }
-  ];
-
-  /* Selektor kontenera z treścią — dopasuj do swojego motywu.
-     Otwórz F12 → Inspect na tekście strony docelowej i sprawdź nazwę klasy.
-     Typowe: '.entry-content' | '.post-content' | 'main' | 'article' */
+  /* Selektory treści — kolejność ma znaczenie, używany jest pierwszy pasujący */
   var contentSelectors = [
     '.entry-content',
     '.post-content',
     '.page-content',
     '.elementor-section-wrap',
-    '.wp-block-group__inner-container',
     'article .content',
-    'main .content',
     'main',
     'article',
     '#content',
@@ -293,123 +250,73 @@
     '.site-main'
   ];
 
-  /* ================================================================
-     LOGIKA — nie trzeba zmieniać
-     ================================================================ */
-
-  var menuEl   = document.getElementById('wlm-menu');
   var bodyEl   = document.getElementById('wlm-body');
   var loaderEl = document.getElementById('wlm-loader');
+  var links    = document.querySelectorAll('#wlm-menu a[data-wlm]');
 
-  function buildMenu() {
-    menuItems.forEach(function (item) {
-      var li = document.createElement('li');
-      var a  = document.createElement('a');
-      a.href = item.url;
-
-      if (item.icon) {
-        var ico = document.createElement('span');
-        ico.className = 'wlm-icon';
-        ico.setAttribute('aria-hidden', 'true');
-        ico.textContent = item.icon;
-        a.appendChild(ico);
-      }
-      a.appendChild(document.createTextNode(' ' + item.label));
-
-      a.addEventListener('click', function (e) {
-        e.preventDefault();
-        loadPage(item.url, a);
-      });
-
-      li.appendChild(a);
-      menuEl.appendChild(li);
-    });
-  }
-
-  function setActive(linkEl) {
-    menuEl.querySelectorAll('a').forEach(function (a) {
-      a.classList.remove('wlm-active');
-      a.removeAttribute('aria-current');
-    });
-    linkEl.classList.add('wlm-active');
-    linkEl.setAttribute('aria-current', 'page');
+  function setActive(el) {
+    links.forEach(function(a) { a.classList.remove('wlm-active'); });
+    el.classList.add('wlm-active');
   }
 
   function extractContent(html) {
     var parser = new DOMParser();
     var doc = parser.parseFromString(html, 'text/html');
-
-    /* Usuń header, footer, nav, aside ze źródła */
-    ['header', 'footer', 'nav', 'aside', '.site-header', '.site-footer',
-     '.main-navigation', '#masthead', '#colophon', '.widget-area'].forEach(function (s) {
-      doc.querySelectorAll(s).forEach(function (el) { el.remove(); });
+    ['header','footer','nav','aside','.site-header','.site-footer',
+     '.main-navigation','#masthead','#colophon','.widget-area'].forEach(function(s){
+      doc.querySelectorAll(s).forEach(function(el){ el.remove(); });
     });
-
     for (var i = 0; i < contentSelectors.length; i++) {
       var el = doc.querySelector(contentSelectors[i]);
-      if (el && el.innerHTML.trim().length > 30) {
-        return el.innerHTML;
-      }
+      if (el && el.innerHTML.trim().length > 30) return el.innerHTML;
     }
-
     var body = doc.querySelector('body');
     return body ? body.innerHTML : '<p>Brak treści.</p>';
   }
 
   function fixUrls(html) {
-    var origin = window.location.origin;
+    var o = window.location.origin;
     return html
-      .replace(/(\ssrc=["'])\/(?!\/)/g, '$1' + origin + '/')
-      .replace(/(\shref=["'])\/(?!\/)/g, '$1' + origin + '/');
+      .replace(/(\ssrc=["'])\/(?!\/)/g, '$1' + o + '/')
+      .replace(/(\shref=["'])\/(?!\/)/g, '$1' + o + '/');
   }
 
   function loadPage(url, linkEl) {
     setActive(linkEl);
-    loaderEl.classList.add('wlm-visible');
+    loaderEl.classList.add('wlm-on');
     bodyEl.innerHTML = '';
 
     fetch(url, { credentials: 'same-origin' })
-      .then(function (r) {
-        if (!r.ok) throw new Error('Strona nie istnieje (HTTP ' + r.status + ')');
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.text();
       })
-      .then(function (html) {
-        var content = fixUrls(extractContent(html));
+      .then(function(html) {
         var div = document.createElement('div');
         div.id = 'wlm-content-inner';
-        div.innerHTML = content;
-
-        /* Linki zewnętrzne → nowa karta */
-        div.querySelectorAll('a[href]').forEach(function (a) {
-          var h = a.getAttribute('href') || '';
-          if (h && !h.startsWith('#') && !h.startsWith('/') && !h.startsWith(window.location.origin)) {
-            a.setAttribute('target', '_blank');
-            a.setAttribute('rel', 'noopener noreferrer');
-          }
-        });
-
+        div.innerHTML = fixUrls(extractContent(html));
         bodyEl.appendChild(div);
-        loaderEl.classList.remove('wlm-visible');
+        loaderEl.classList.remove('wlm-on');
         document.getElementById('wlm-wrapper').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       })
-      .catch(function (err) {
+      .catch(function(err) {
         var e = document.createElement('div');
         e.className = 'wlm-error';
         e.innerHTML = '<strong>Nie udało się wczytać treści.</strong><br>'
-          + 'URL: <code>' + url + '</code><br>'
-          + 'Błąd: ' + err.message + '<br><br>'
-          + '<small>Sprawdź w F12 → Console czy nie ma błędów JS oraz czy podany URL istnieje.</small>';
+          + 'URL: <code>' + url + '</code><br>Błąd: ' + err.message + '<br><br>'
+          + '<small>Sprawdź czy podany URL istnieje na stronie.</small>';
         bodyEl.appendChild(e);
-        loaderEl.classList.remove('wlm-visible');
-        console.error('[WLM] Błąd:', err);
+        loaderEl.classList.remove('wlm-on');
+        console.error('[WLM]', err);
       });
   }
 
-  buildMenu();
-
-  /* Opcjonalnie — odkomentuj aby automatycznie wczytać pierwszą stronę: */
-  // var first = menuEl.querySelector('a');
-  // if (first) loadPage(menuItems[0].url, first);
+  links.forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      loadPage(a.getAttribute('href'), a);
+    });
+  });
 
 })();
 </script>
